@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, ArrowRight, User } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface JoinOverlayProps {
   roomName: string
@@ -46,27 +48,27 @@ export default function JoinOverlay({ roomName, playerCount, onJoin }: JoinOverl
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: "100%" }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="w-full max-w-sm bg-[#0A0A0A] sm:rounded-2xl rounded-t-2xl sm:border border-[#222] shadow-2xl overflow-hidden"
+        className="w-full max-w-sm bg-card sm:rounded-2xl rounded-t-2xl sm:border border-border shadow-2xl overflow-hidden"
       >
         <div className="p-6 sm:p-8 flex flex-col items-center">
           
-          <div className="w-16 h-16 rounded-full bg-[#111] border border-[#222] flex items-center justify-center text-[#A1A1AA] mb-6">
+          <div className="w-16 h-16 rounded-full bg-accent/50 border border-border flex items-center justify-center text-muted-foreground mb-6">
              <Users size={28} />
           </div>
 
-          <h2 className="font-display text-2xl font-medium tracking-tight mb-2 text-center text-white">{roomName}</h2>
+          <h2 className="font-display text-2xl font-medium tracking-tight mb-2 text-center text-foreground">{roomName}</h2>
           
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full font-body text-[10px] font-semibold uppercase tracking-wider text-[#A1A1AA] mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-accent/30 border border-border rounded-full font-body text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-success" />
             {playerCount} {playerCount === 1 ? 'player' : 'players'} waiting
           </div>
 
           <div className="w-full mb-6">
             <div className="relative">
-              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#52525B]" />
-              <input
+              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
                 ref={inputRef}
-                className="w-full bg-[#111] border border-[#333] focus:border-white focus:bg-[#1A1A1A] text-white rounded-xl pl-12 pr-4 py-4 font-body transition-all outline-none placeholder:text-[#52525B]"
+                className="w-full pl-12 pr-4 py-7 rounded-xl font-body transition-all text-lg"
                 placeholder="Enter your name"
                 value={name}
                 maxLength={20}
@@ -80,7 +82,7 @@ export default function JoinOverlay({ roomName, playerCount, onJoin }: JoinOverl
               {error && (
                 <motion.p
                   initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                  className="text-xs font-semibold text-[#EF4444] mt-2 ml-1"
+                  className="text-xs font-semibold text-destructive mt-2 ml-1"
                 >
                   {error}
                 </motion.p>
@@ -88,15 +90,15 @@ export default function JoinOverlay({ roomName, playerCount, onJoin }: JoinOverl
             </AnimatePresence>
           </div>
 
-          <button
+          <Button
+            size="lg"
             onClick={handleJoin}
             disabled={!name.trim() || loading}
-            className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-semibold transition-all
-              ${name.trim() && !loading ? 'bg-white text-black hover:opacity-90' : 'bg-white/5 text-white/30 border border-white/10 cursor-not-allowed'}`}
+            className="w-full py-6 rounded-xl font-semibold text-lg gap-2"
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                 Joining...
               </>
             ) : (
@@ -104,9 +106,9 @@ export default function JoinOverlay({ roomName, playerCount, onJoin }: JoinOverl
                 Join Room <ArrowRight size={16} />
               </>
             )}
-          </button>
+          </Button>
 
-          <p className="text-center font-body text-[10px] font-semibold text-[#52525B] uppercase tracking-widest mt-6">
+          <p className="text-center font-body text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mt-6">
             No signup required
           </p>
         </div>

@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Copy, Check, Trophy, ChevronRight } from 'lucide-react'
 import { getFingerprint, savePlayerSession } from '@/lib/fingerprint'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
 
 const ROOM_SUGGESTIONS = ['MI Wale', 'Office Adda', 'Family Room 2026', 'Colony Boys', 'College Yaar', 'Cricket Lovers']
 
@@ -33,15 +36,15 @@ function Steps({ current }: { current: 1 | 2 | 3 }) {
           <div key={l} className="flex items-center">
             <div className="flex flex-col items-center gap-1.5">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors
-                ${done ? 'bg-[#10B981] text-white' : active ? 'bg-white text-black' : 'bg-[#1A1A1A] text-[#52525B] border border-[#333]'}`}>
+                ${done ? 'bg-success text-white' : active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground border border-border'}`}>
                 {done ? <Check size={14} /> : n}
               </div>
-              <span className={`text-[10px] uppercase tracking-wider font-semibold ${active ? 'text-white' : done ? 'text-[#10B981]' : 'text-[#52525B]'}`}>
+              <span className={`text-[10px] uppercase tracking-wider font-semibold ${active ? 'text-primary' : done ? 'text-success' : 'text-muted-foreground'}`}>
                 {l}
               </span>
             </div>
             {i < 2 && (
-              <div className={`w-8 h-px mb-5 mx-2 transition-colors ${done ? 'bg-[#10B981]' : 'bg-white/20'}`} />
+              <div className={`w-8 h-px mb-5 mx-2 transition-colors ${done ? 'bg-success' : 'bg-border'}`} />
             )}
           </div>
         )
@@ -71,17 +74,17 @@ function StepRoomName({ onNext }: { onNext: (name: string) => void }) {
 
       <div>
         <div className="relative">
-          <input
+          <Input
             ref={inputRef}
             value={name}
             maxLength={30}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && name.trim().length >= 2 && onNext(name.trim())}
             placeholder={ROOM_SUGGESTIONS[placeholderIdx]}
-            className="w-full bg-[#111] border border-[#333] text-white rounded-xl !text-xl !py-4 px-5 font-display outline-none focus:border-white focus:bg-[#1A1A1A] transition-all placeholder:text-[#52525B]"
+            className="w-full text-white rounded-xl !text-xl !py-7 px-5 font-display outline-none transition-all"
           />
           {name.trim().length >= 2 && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#10B981]">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-success">
               <Check size={20} />
             </div>
           )}
@@ -89,26 +92,26 @@ function StepRoomName({ onNext }: { onNext: (name: string) => void }) {
       </div>
 
       <div>
-        <p className="text-xs text-[#52525B] mb-4 uppercase tracking-wider font-semibold">Suggestions</p>
+        <p className="text-xs text-muted-foreground mb-4 uppercase tracking-wider font-semibold">Suggestions</p>
         <div className="flex flex-wrap gap-2">
           {ROOM_SUGGESTIONS.map(s => (
-            <button key={s} 
+            <Button key={s} 
+              variant={name === s ? "default" : "outline"}
               onClick={() => setName(s)}
-              className={`px-4 py-2 rounded-lg text-sm transition-colors border
-                ${name === s ? 'bg-white text-black border-white' : 'bg-transparent text-[#A1A1AA] border-[#333] hover:border-[#777] hover:text-white'}`}>
+              className="rounded-lg text-sm">
               {s}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
-      <button
+      <Button
+        size="lg"
         onClick={() => name.trim().length >= 2 && onNext(name.trim())}
         disabled={name.trim().length < 2}
-        className={`w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all
-          ${name.trim().length >= 2 ? 'bg-white text-black hover:opacity-90' : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'}`}>
+        className="w-full rounded-xl font-semibold gap-2 py-6 text-lg">
         Continue <ChevronRight size={18} />
-      </button>
+      </Button>
     </motion.div>
   )
 }
@@ -134,38 +137,38 @@ function StepAdminName({ roomName, onNext, onBack }: {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-[#111] border border-[#333] flex items-center justify-center text-3xl">
+        <div className="w-16 h-16 rounded-2xl bg-accent border border-border flex items-center justify-center text-3xl">
           {avatar}
         </div>
         <div className="flex-1">
-          <input
+          <Input
             ref={inputRef}
             value={name}
             maxLength={20}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && name.trim().length >= 1 && onNext(name.trim())}
             placeholder="Enter your name"
-            className="w-full bg-[#111] border border-[#333] text-white rounded-xl !text-xl !py-4 px-4 font-display outline-none focus:border-white focus:bg-[#1A1A1A] transition-all placeholder:text-[#52525B]"
+            className="w-full text-white rounded-xl !text-xl !py-7 px-4 font-display outline-none transition-all"
           />
         </div>
       </div>
 
-      <div className="p-4 rounded-xl bg-[#111] border border-[#222] text-sm text-[#A1A1AA] flex items-start gap-3">
-        <Trophy size={18} className="text-white shrink-0 mt-0.5" />
+      <div className="p-4 rounded-xl bg-accent border border-border text-sm text-muted-foreground flex items-start gap-3">
+        <Trophy size={18} className="text-primary shrink-0 mt-0.5" />
         <p>Your session is tied to this device securely. No passwords required.</p>
       </div>
 
       <div className="flex gap-3">
-        <button onClick={onBack} className="px-6 py-4 rounded-xl border border-[#444] text-[#A1A1AA] hover:bg-[#222] hover:text-white hover:border-white transition-colors">
+        <Button size="lg" variant="outline" onClick={onBack} className="py-6 rounded-xl border-border text-muted-foreground">
           Back
-        </button>
-        <button
+        </Button>
+        <Button
+          size="lg"
           onClick={() => name.trim() && onNext(name.trim())}
           disabled={!name.trim()}
-          className={`flex-1 py-4 rounded-xl font-semibold transition-all
-            ${name.trim() ? 'bg-white text-black hover:opacity-90' : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'}`}>
+          className="flex-1 py-6 rounded-xl font-semibold text-lg">
           Create Room
-        </button>
+        </Button>
       </div>
     </motion.div>
   )
@@ -180,12 +183,17 @@ function StepRoomCreated({ roomCode, roomName, onGoToRoom }: {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ipl-adda.vercel.app'
 
   useEffect(() => {
-    const t = setInterval(() => setCountdown(c => {
-      if (c <= 1) { clearInterval(t); onGoToRoom(); return 0 }
-      return c - 1
-    }), 1000)
+    const t = setInterval(() => {
+      setCountdown((c) => (c > 0 ? c - 1 : 0))
+    }, 1000)
     return () => clearInterval(t)
-  }, [onGoToRoom])
+  }, [])
+
+  useEffect(() => {
+    if (countdown === 0) {
+      onGoToRoom()
+    }
+  }, [countdown, onGoToRoom])
 
   function copyCode() {
     navigator.clipboard.writeText(roomCode)
@@ -196,26 +204,28 @@ function StepRoomCreated({ roomCode, roomName, onGoToRoom }: {
   return (
     <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8 text-center pt-8">
       <div>
-        <div className="w-16 h-16 mx-auto bg-[#10B981]/10 text-[#10B981] rounded-full flex items-center justify-center mb-6">
+        <div className="w-16 h-16 mx-auto bg-success/20 text-success rounded-full flex items-center justify-center mb-6">
           <Check size={32} />
         </div>
         <h1 className="font-display text-4xl font-medium tracking-tight mb-2">Room Created</h1>
-        <p className="text-[#A1A1AA] text-sm">Your private space is ready.</p>
+        <p className="text-muted-foreground text-sm">Your private space is ready.</p>
       </div>
 
-      <div className="clean-card !p-8">
-        <p className="text-xs uppercase tracking-widest text-[#52525B] mb-4 font-semibold">Access Code</p>
-        <div className="text-5xl font-display tracking-[0.2em] text-white mb-6">
-          {roomCode}
-        </div>
-        <button onClick={copyCode} className="clean-btn-ghost w-full">
-          {copied ? <><Check size={16} /> Copied to Clipboard</> : <><Copy size={16} /> Copy Code</>}
-        </button>
-      </div>
+      <Card className="border-border bg-accent/30">
+        <CardContent className="p-8">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4 font-semibold">Access Code</p>
+          <div className="text-5xl font-display tracking-[0.2em] text-foreground mb-6 font-bold">
+            {roomCode}
+          </div>
+          <Button variant="outline" onClick={copyCode} className="w-full gap-2">
+            {copied ? <><Check size={16} /> Copied to Clipboard</> : <><Copy size={16} /> Copy Code</>}
+          </Button>
+        </CardContent>
+      </Card>
 
-      <button onClick={onGoToRoom} className="clean-btn w-full">
-        Enter Room Now <span className="ml-2 bg-black/10 text-black px-2 py-0.5 rounded text-xs">{countdown}s</span>
-      </button>
+      <Button size="lg" onClick={onGoToRoom} className="w-full rounded-xl py-6 text-lg font-bold gap-2">
+        Enter Room Now <span className="bg-black/20 text-primary-foreground px-2 py-1 rounded text-xs">{countdown}s</span>
+      </Button>
     </motion.div>
   )
 }
@@ -253,10 +263,10 @@ export default function CreatePage() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-8 sm:pt-20 px-4">
       <div className="w-full max-w-lg mb-8">
-        <button onClick={() => step > 1 ? setStep((step - 1) as 1 | 2) : router.push('/')}
-          className="text-[#A1A1AA] hover:text-white transition-colors flex items-center gap-2 mb-8">
+        <Button variant="ghost" onClick={() => step > 1 ? setStep((step - 1) as 1 | 2) : router.push('/')}
+          className="text-muted-foreground hover:text-foreground gap-2 mb-8 -ml-4">
           <ArrowLeft size={18} /> Back
-        </button>
+        </Button>
 
         <div className="flex items-center justify-between mb-8">
           <div className="font-display font-medium text-xl">IPL ADDA</div>

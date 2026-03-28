@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Clock, Lock, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { format, differenceInSeconds, isPast } from 'date-fns'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { getTeamColors } from '@/lib/teams'
 import type { Match } from '@/store/useGameStore'
 
@@ -29,7 +31,7 @@ function LockCountdown({ lockTime }: { lockTime: string }) {
 
   if (secs <= 0) {
     return (
-      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EF4444]/10 text-[#EF4444] text-[10px] font-bold uppercase tracking-wider">
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold uppercase tracking-wider">
         <Lock size={10} /> Locked
       </div>
     )
@@ -44,9 +46,9 @@ function LockCountdown({ lockTime }: { lockTime: string }) {
     <motion.div
       animate={urgent ? { opacity: [1, 0.5, 1] } : {}}
       transition={{ duration: 1, repeat: Infinity }}
-      className={`flex items-center gap-1.5 text-xs font-semibold ${urgent ? 'text-[#EF4444]' : 'text-[#A1A1AA]'}`}
+      className={`flex items-center gap-1.5 text-xs font-semibold ${urgent ? 'text-destructive' : 'text-muted-foreground'}`}
     >
-      {urgent && <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />}
+      {urgent && <div className="w-1.5 h-1.5 rounded-full bg-destructive" />}
       <Lock size={10} />
       {h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`}
     </motion.div>
@@ -61,55 +63,57 @@ export default function MatchCard({ match, onPredict, hasPrediction, compact }: 
 
   if (compact) {
     return (
-      <div className="clean-card !p-4 border-[#222]">
+      <Card className="p-4 border-border bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="font-display text-lg font-medium" style={{ color: homeTeam.primary }}>{match.team_home}</div>
-            <span className="text-[#52525B] text-xs font-semibold">VS</span>
+            <span className="text-muted-foreground text-xs font-semibold">VS</span>
             <div className="font-display text-lg font-medium" style={{ color: awayTeam.primary }}>{match.team_away}</div>
           </div>
           <div className="text-right">
-            <div className="font-body text-[11px] text-[#A1A1AA] uppercase font-semibold">{format(matchTime, 'MMM d · h:mm a')}</div>
+            <div className="font-body text-[11px] text-muted-foreground uppercase font-semibold">{format(matchTime, 'MMM d · h:mm a')}</div>
             {match.status === 'completed' && match.result_winner && (
-              <div className="text-[10px] text-[#10B981] font-bold mt-0.5">{match.result_winner} won</div>
+              <div className="text-[10px] text-success font-bold mt-0.5">{match.result_winner} won</div>
             )}
           </div>
         </div>
-      </div>
+      </Card>
     )
   }
 
   return (
+    <Card
+      className={`p-0 overflow-hidden relative bg-card ${match.status === 'live' ? 'border-amber-500/50' : 'border-border'}`}
+    >
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`clean-card !p-0 overflow-hidden relative ${match.status === 'live' ? 'border-[#F59E0B]/30' : 'border-[#222]'}`}
     >
       <div className="h-[2px] w-full"
         style={{
-          background: match.status === 'live' ? '#F59E0B' : match.status === 'completed' ? '#10B981' : '#333',
+          background: match.status === 'live' ? '#F59E0B' : match.status === 'completed' ? '#10B981' : 'var(--border)',
         }}
       />
 
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#222] bg-[#0A0A0A]">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card">
         <div className="flex items-center gap-2">
-          <span className="font-body text-[10px] text-[#A1A1AA] font-bold uppercase tracking-wider">
+          <span className="font-body text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
             Match #{match.match_number}
           </span>
           {match.status === 'live' && (
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-[#F59E0B] bg-[#F59E0B]/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse" /> LIVE
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-amber-500 bg-amber-500/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> LIVE
             </span>
           )}
           {match.status === 'completed' && (
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-[#10B981] bg-[#10B981]/10">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold text-success bg-success/10">
               <CheckCircle2 size={10} /> DONE
             </span>
           )}
         </div>
         {match.status === 'upcoming' && <LockCountdown lockTime={match.lock_time} />}
         {match.status === 'completed' && match.result_winner && (
-          <span className="font-body text-[11px] font-bold text-[#10B981]">
+          <span className="font-body text-[11px] font-bold text-success">
             {match.result_winner} won
           </span>
         )}
@@ -117,46 +121,60 @@ export default function MatchCard({ match, onPredict, hasPrediction, compact }: 
 
       <div className="px-5 py-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col items-center gap-2 flex-1">
+        <div className="flex flex-col items-center gap-2 flex-1">
             <div className="font-display text-4xl font-medium tracking-tight" style={{ color: homeTeam.primary }}>
               {match.team_home}
             </div>
-            <div className="font-body text-[10px] text-[#A1A1AA] uppercase tracking-wider text-center hidden sm:block">
+            <div className="font-body text-[10px] text-muted-foreground uppercase tracking-wider text-center hidden sm:block">
               {match.team_home_full}
             </div>
           </div>
 
           <div className="flex flex-col items-center gap-2 flex-shrink-0">
-            <div className="font-display text-xl text-[#333] font-medium">VS</div>
-            <div className="flex items-center gap-1 font-body text-[11px] font-semibold text-[#A1A1AA]">
+            <div className="font-display text-xl text-border font-medium">VS</div>
+            <div className="flex items-center gap-1 font-body text-[11px] font-semibold text-muted-foreground">
               <Clock size={11} /> {format(matchTime, 'h:mm a')}
             </div>
-            <div className="font-body text-[10px] text-[#52525B] uppercase tracking-widest font-semibold">{format(matchTime, 'MMM d')}</div>
+            <div className="font-body text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{format(matchTime, 'MMM d')}</div>
           </div>
 
           <div className="flex flex-col items-center gap-2 flex-1">
             <div className="font-display text-4xl font-medium tracking-tight" style={{ color: awayTeam.primary }}>
               {match.team_away}
             </div>
-            <div className="font-body text-[10px] text-[#A1A1AA] uppercase tracking-wider text-center hidden sm:block">
+            <div className="font-body text-[10px] text-muted-foreground uppercase tracking-wider text-center hidden sm:block">
               {match.team_away_full}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-1.5 mt-6 py-2.5 rounded border border-[#222] bg-[#111] font-body text-[11px] text-[#A1A1AA] font-semibold">
+        {match.status === 'live' && (match.live_home_score || match.live_away_score) && (
+          <div className="flex flex-col items-center gap-1 my-4 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+            <div className="flex items-center justify-between w-full px-4 text-sm font-display font-medium">
+              <span className="text-amber-500">{match.live_home_score || '0/0 (0)'}</span>
+              <span className="text-amber-500">{match.live_away_score || '0/0 (0)'}</span>
+            </div>
+            {match.live_updated_at && (
+              <span className="text-[9px] uppercase tracking-widest text-[#52525B] font-bold">
+                Updated {format(new Date(match.live_updated_at), 'h:mm a')}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-center gap-1.5 mt-6 py-2.5 rounded border border-border bg-accent/30 font-body text-[11px] text-muted-foreground font-semibold">
           <MapPin size={11} /> {match.venue}, {match.city}
         </div>
 
         {match.status === 'completed' && match.result_winner && (
-          <div className="mt-4 p-3 rounded border border-[#10B981]/20 bg-[#10B981]/5">
+          <div className="mt-4 p-3 rounded border border-success/30 bg-success/10">
             <div className="flex items-center justify-between">
               <span className="font-body text-xs font-semibold">
-                <span className="text-[#10B981]">{match.result_winner}</span>
-                <span className="text-[#A1A1AA]"> won</span>
+                <span className="text-success">{match.result_winner}</span>
+                <span className="text-muted-foreground"> won</span>
               </span>
               {match.result_man_of_match && (
-                <span className="font-body text-[10px] text-[#A1A1AA] uppercase tracking-wider font-semibold">
+                <span className="font-body text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                   MOM: {match.result_man_of_match}
                 </span>
               )}
@@ -165,15 +183,13 @@ export default function MatchCard({ match, onPredict, hasPrediction, compact }: 
         )}
 
         {match.status === 'upcoming' && onPredict && (
-          <button
+          <Button
+            size="lg"
+            variant={locked ? "secondary" : hasPrediction ? "outline" : "default"}
             onClick={onPredict}
             disabled={locked}
-            className={`w-full mt-5 py-3.5 flex items-center justify-center gap-2 rounded-lg font-body text-sm font-semibold transition-all ${
-              locked
-                ? 'bg-[#1A1A1A] text-[#52525B] border border-[#333] cursor-not-allowed'
-                : hasPrediction
-                ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/30 hover:bg-[#10B981]/20'
-                : 'bg-white text-black hover:bg-gray-100'
+            className={`w-full mt-5 font-semibold text-sm gap-2 ${
+              hasPrediction && !locked ? 'bg-success/10 text-success border-success/30 hover:bg-success/20' : ''
             }`}
           >
             {locked ? (
@@ -183,9 +199,10 @@ export default function MatchCard({ match, onPredict, hasPrediction, compact }: 
             ) : (
               <>Predict Now <ChevronRight size={14} /></>
             )}
-          </button>
+          </Button>
         )}
       </div>
     </motion.div>
+    </Card>
   )
 }

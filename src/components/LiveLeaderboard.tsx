@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useGameStore } from '@/store/useGameStore'
 import type { Player } from '@/store/useGameStore'
 import { Trophy } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 
 // ─── Podium top 3 ─────────────────────────────────────────────
 function Podium({ players, currentPlayerId }: { players: Player[]; currentPlayerId?: string }) {
@@ -54,13 +55,13 @@ function Podium({ players, currentPlayerId }: { players: Player[]; currentPlayer
             </div>
 
             <div className="text-center w-full">
-              <div className={`font-body text-xs font-semibold truncate px-1 ${isCurrent ? 'text-white' : 'text-[#A1A1AA]'}`}>
+              <div className={`font-body text-xs font-semibold truncate px-1 ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`}>
                 {player.display_name}
               </div>
               <div className="font-display text-lg sm:text-2xl font-medium tracking-tight mt-0.5">
                 {player.total_points}
               </div>
-              <div className="font-body text-[10px] text-[#52525B] uppercase tracking-widest font-semibold mt-0.5">pts</div>
+              <div className="font-body text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">pts</div>
             </div>
 
             <motion.div
@@ -82,12 +83,12 @@ function Podium({ players, currentPlayerId }: { players: Player[]; currentPlayer
 
 // ─── Rank badge ────────────────────────────────────────────────
 function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-[#FBBF24]/20 border border-[#FBBF24] text-[#FBBF24] shrink-0">1</div>
-  if (rank === 2) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-[#E4E4E7]/20 border border-[#E4E4E7] text-[#E4E4E7] shrink-0">2</div>
-  if (rank === 3) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-[#D4A373]/20 border border-[#D4A373] text-[#D4A373] shrink-0">3</div>
+  if (rank === 1) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-amber-500/20 border border-amber-500 text-amber-500 shrink-0">1</div>
+  if (rank === 2) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-zinc-200/20 border border-zinc-200 text-zinc-200 shrink-0">2</div>
+  if (rank === 3) return <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm bg-orange-300/20 border border-orange-300 text-orange-300 shrink-0">3</div>
   
   return (
-    <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-medium text-sm bg-[#111] border border-[#222] text-[#52525B] shrink-0">
+    <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-medium text-sm bg-accent border border-border text-muted-foreground shrink-0">
       {rank}
     </div>
   )
@@ -108,17 +109,17 @@ function LeaderboardRow({ player, rank, isCurrentPlayer, pointsDelta }: {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       className={`flex items-center gap-4 px-4 py-3 rounded-xl border transition-colors
-        ${isCurrentPlayer ? 'bg-white/5 border-white/20' : 'bg-transparent border-transparent hover:bg-[#111]'}`}
+        ${isCurrentPlayer ? 'bg-accent/50 border-border' : 'bg-transparent border-transparent hover:bg-accent'}`}
     >
       <RankBadge rank={rank} />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className={`font-body text-sm font-semibold truncate ${isCurrentPlayer ? 'text-white' : 'text-[#A1A1AA]'}`}>
+          <span className={`font-body text-sm font-semibold truncate ${isCurrentPlayer ? 'text-primary' : 'text-muted-foreground'}`}>
             {player.display_name}
           </span>
           {isCurrentPlayer && (
-            <span className="bg-white text-black text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">You</span>
+            <span className="bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">You</span>
           )}
           {player.streak >= 3 && (
             <span className="text-sm" title={`${player.streak} match streak`}>
@@ -126,7 +127,7 @@ function LeaderboardRow({ player, rank, isCurrentPlayer, pointsDelta }: {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[#52525B] text-[11px] mt-1 font-body font-medium uppercase tracking-wider">
+        <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] mt-1 font-body font-medium uppercase tracking-wider">
           <span>{player.correct_predictions}/{player.total_predictions} correct</span>
           {player.total_predictions > 0 && (
             <>
@@ -138,7 +139,7 @@ function LeaderboardRow({ player, rank, isCurrentPlayer, pointsDelta }: {
       </div>
 
       <div className="relative shrink-0 text-right">
-        <div className={`font-display text-2xl font-medium tracking-tight ${isCurrentPlayer ? 'text-white' : 'text-[#A1A1AA]'}`}>
+        <div className={`font-display text-2xl font-medium tracking-tight ${isCurrentPlayer ? 'text-primary' : 'text-muted-foreground'}`}>
           {player.total_points}
         </div>
         <AnimatePresence>
@@ -224,39 +225,43 @@ export default function LiveLeaderboard({ roomId, currentPlayerId }: { roomId: s
     <div className="space-y-4 pb-24">
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-display text-xl font-medium flex items-center gap-2">
-          <Trophy size={18} className="text-[#A1A1AA]" /> Leaderboard
+          <Trophy size={18} className="text-muted-foreground" /> Leaderboard
         </h3>
-        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" /> LIVE
+        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-success bg-success/10 px-2 py-0.5 rounded">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> LIVE
         </div>
       </div>
 
       {loading ? (
-        <div className="clean-card !p-0 divide-y divide-[#222]">
-          {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
-        </div>
+        <Card className="p-0 overflow-hidden bg-card border-border">
+          <div className="divide-y divide-border">
+            {[1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </div>
+        </Card>
       ) : sorted.length === 0 ? (
-        <div className="clean-card text-center py-12">
-          <div className="text-3xl mb-4 text-[#52525B]">📊</div>
-          <p className="font-body text-sm text-[#A1A1AA]">No players yet. Invite your friends!</p>
-        </div>
+        <Card className="text-center py-12 bg-card border-border">
+          <div className="text-3xl mb-4 text-muted-foreground">📊</div>
+          <p className="font-body text-sm text-muted-foreground">No players yet. Invite your friends!</p>
+        </Card>
       ) : (
         <>
           {sorted.length >= 2 && <Podium players={sorted} currentPlayerId={currentPlayerId} />}
 
-          <div className="clean-card !p-0 divide-y divide-[#222]">
-            <AnimatePresence>
-              {sorted.map((player, i) => (
-                <LeaderboardRow
-                  key={player.id}
-                  player={player}
-                  rank={i + 1}
-                  isCurrentPlayer={player.id === currentPlayerId}
-                  pointsDelta={pointsDeltas[player.id] ?? 0}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          <Card className="p-0 overflow-hidden bg-card border-border">
+            <div className="divide-y divide-border">
+              <AnimatePresence>
+                {sorted.map((player, i) => (
+                  <LeaderboardRow
+                    key={player.id}
+                    player={player}
+                    rank={i + 1}
+                    isCurrentPlayer={player.id === currentPlayerId}
+                    pointsDelta={pointsDeltas[player.id] ?? 0}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          </Card>
         </>
       )}
     </div>

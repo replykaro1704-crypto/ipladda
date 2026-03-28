@@ -38,10 +38,15 @@ export interface Match {
   result_total_runs?: number
   result_runs_bracket?: string
   result_man_of_match?: string
-  result_runs_home?: number
   result_runs_away?: number
   result_wickets_home?: number
   result_wickets_away?: number
+  live_home_score?: string
+  live_away_score?: string
+  live_updated_at?: string
+  ext_rapidapi_id?: string
+  ext_cricketdata_id?: string
+  ext_entity_id?: string
   home_playing_xi?: string[]
   away_playing_xi?: string[]
   lock_time: string

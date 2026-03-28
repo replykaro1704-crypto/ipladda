@@ -5,40 +5,6 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Ultra-Clean Monochromatic Dark Theme */
-  --bg-primary: #050505;
-  --bg-secondary: #0F0F13;
-  --bg-tertiary: #17171C;
-  --bg-hover: #222228;
-
-  --border-light: rgba(255, 255, 255, 0.15);
-  --border-focus: rgba(255, 255, 255, 0.35);
-
-  --text-primary: #FFFFFF;
-  --text-secondary: #A1A1AA; /* Zinc 400 */
-  --text-tertiary: #71717A; /* Zinc 500 */
-
-  /* Accents - Minimalist */
-  --accent: oklch(0.97 0 0);
-  --accent-muted: #E4E4E7;
-  --success: #10B981; /* Precise Green */
-  --danger: #EF4444; /* Clean Red */
-  --live: #F59E0B; /* Amber for Live */
-
-  /* Team Colors - Slightly desaturated for clean UI */
-  --rcb: #D11F2F; --mi: #005DA0; --csk: #F5C300; --kkr: #3A1F6E;
-  --srh: #E8590A; --dc:  #0057A0; --rr:  #E91E8C; --gt:  #1C2B5E;
-  --pbks:#ED1B24; --lsg: #A4D65E;
-
-  /* Typography assigned from Next.js Layout */
-  --font-display: var(--font-outfit), sans-serif;
-  --font-body: var(--font-inter), sans-serif;
-
-  /* Clean Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -51,57 +17,25 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Typography assigned from Next.js Layout */
+  --font-display: var(--font-outfit), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
-html { 
-  scroll-behavior: smooth;
-}
 
-body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-::selection { 
-  background: var(--text-primary); 
-  color: var(--bg-primary); 
-}
-
-/* ======================== UTILITIES ======================== */
+/* Shared Domain Globals */
 .font-display { font-family: var(--font-display); }
 .font-body { font-family: var(--font-body); }
 
-/* Clean Layouts */
 .page-container {
   max-width: 800px;
   margin: 0 auto;
@@ -109,152 +43,19 @@ body {
   width: 100%;
 }
 
-/* ======================== CLEAN COMPONENTS ======================== */
-
-.clean-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-.clean-card:hover {
-  border-color: var(--border-focus);
-}
-
-.clean-input {
-  width: 100%;
-  background: var(--bg-hover); /* #1A1A1A */
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  padding: 0.875rem 1rem;
-  outline: none;
-  transition: all 0.2s ease;
-}
-.clean-input::placeholder { color: var(--text-tertiary); }
-.clean-input:focus { 
-  border-color: rgba(255, 255, 255, 0.4); 
-  background: #27272A; /* zinc-800 */
-}
-
-.clean-btn {
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1rem;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.875rem 1.5rem;
-  cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  user-select: none;
-}
-.clean-btn:hover { opacity: 0.9; }
-.clean-btn:active { transform: scale(0.98); }
-.clean-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.clean-btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-body);
-  font-weight: 500;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 0.875rem 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.clean-btn-ghost:hover {
-  border-color: var(--border-focus);
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-.clean-btn-ghost:active { transform: scale(0.98); }
-
-/* ======================== BADGES / PILLS ======================== */
-.badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px;
-  border-radius: 99px;
-  font-family: var(--font-display);
-  font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
-  text-transform: uppercase;
-  border: 1px solid var(--border-light);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-}
-.badge-live {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--live);
-  border-color: rgba(245, 158, 11, 0.2);
-}
-.live-dot {
-  width: 6px; height: 6px;
-  background: currentColor;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: inline-block;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* ======================== PREDICTION UI ======================== */
 .team-selection-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.team-btn {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 24px 16px;
-  color: var(--text-secondary);
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-.team-btn:hover { border-color: var(--border-focus); color: var(--text-primary); }
-.team-btn.active { 
-  background: var(--text-primary); 
-  border-color: var(--text-primary); 
-  color: var(--bg-primary); 
-}
-
-/* ======================== NAVIGATION ======================== */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  background: rgba(10,10,10,0.85);
+  background: rgba(5,5,5,0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border);
   z-index: 50;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -303,37 +104,26 @@ body {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --background: #050505;
+  --foreground: oklch(0.985 0 0); /* White */
+  --card: #0A0A0A;
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: #0A0A0A;
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.985 0 0); /* White buttons */
+  --primary-foreground: #050505;
+  --secondary: #171717; /* Zinc 900 */
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: #171717;
+  --muted-foreground: oklch(0.708 0 0); /* Zinc 400 */
+  --accent: #27272A; /* Zinc 800 */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: #222222;
+  --input: #1A1A1A;
+  --ring: oklch(0.985 0 0);
+  --radius: 0.75rem;
 }
 
 @layer base {

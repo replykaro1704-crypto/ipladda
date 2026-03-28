@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { isPast, differenceInSeconds, format } from 'date-fns'
 import { Lock, X, Search, Check, Trophy } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { getTeamColors } from '@/lib/teams'
 import { RUNS_BRACKETS } from '@/lib/teams'
 import type { Match, Prediction } from '@/store/useGameStore'
@@ -41,12 +44,12 @@ function LockTimer({ lockTime, onLocked }: { lockTime: string; onLocked: () => v
     <motion.div
       animate={urgent ? { scale: [1, 1.02, 1] } : {}}
       transition={{ duration: 1, repeat: Infinity }}
-      className={`text-center p-3 rounded-xl border ${urgent ? 'bg-[#EF4444]/10 border-[#EF4444]/30' : 'bg-[#111] border-[#222]'}`}
+      className={`text-center p-3 rounded-xl border ${urgent ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'bg-accent border-border'}`}
     >
       <div className="flex items-center justify-center gap-2 font-display text-sm font-semibold tracking-wider">
-        {urgent && <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse" />}
-        <Lock size={12} className={urgent ? 'text-[#EF4444]' : 'text-[#A1A1AA]'} />
-        <span className={urgent ? 'text-[#EF4444]' : 'text-[#A1A1AA]'}>
+        {urgent && <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />}
+        <Lock size={12} className={urgent ? 'text-destructive' : 'text-muted-foreground'} />
+        <span className={urgent ? 'text-destructive' : 'text-muted-foreground'}>
           {secs <= 0 ? 'Locked!' :
             h > 0 ? `Locks in ${h}h ${m}m` :
             m > 0 ? `Locks in ${m}m ${s}s` :
@@ -68,9 +71,9 @@ function PlayerSearchInput({
   return (
     <div className="relative z-10">
       <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525B] pointer-events-none" />
-        <input
-          className="clean-input !pl-9"
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Input
+          className="!pl-9 h-12 rounded-xl text-base bg-accent text-foreground border-border"
           placeholder={options.length === 0 ? 'XI not announced yet' : 'Search player...'}
           value={query}
           disabled={options.length === 0}
@@ -82,11 +85,11 @@ function PlayerSearchInput({
       <AnimatePresence>
         {open && filtered.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-[#1A1A1A] border border-[#333] rounded-xl z-20 max-h-48 overflow-y-auto shadow-2xl">
+            className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl z-20 max-h-48 overflow-y-auto shadow-2xl">
             {filtered.map((p) => (
               <button
                 key={p}
-                className="w-full text-left px-4 py-3 text-sm hover:bg-[#222] transition-colors font-body text-[#A1A1AA] hover:text-white"
+                className="w-full text-left px-4 py-3 text-sm hover:bg-accent transition-colors font-body text-muted-foreground hover:text-foreground"
                 onMouseDown={() => { onChange(p); setQuery(p); setOpen(false) }}
               >
                 {p}
@@ -152,23 +155,23 @@ export default function PredictionForm({
       <motion.div
         initial={{ opacity: 0, y: "100%" }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: "100%" }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="w-full max-w-xl bg-[#0A0A0A] sm:rounded-2xl rounded-t-2xl sm:border border-[#222] max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden"
+        className="w-full max-w-xl bg-card sm:rounded-2xl rounded-t-2xl sm:border border-border max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden relative"
       >
-        <div className="p-5 sm:p-6 border-b border-[#222] bg-[#0A0A0A] sticky top-0 z-10 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-border bg-card sticky top-0 z-10 flex items-center justify-between">
           <div>
             <h2 className="font-display text-2xl font-medium tracking-tight">Make Prediction</h2>
-             <p className="text-[#A1A1AA] text-xs font-body font-semibold uppercase tracking-wider mt-1">Match #{match.match_number} • {format(new Date(match.match_time), 'MMM d')}</p>
+             <p className="text-muted-foreground text-xs font-body font-semibold uppercase tracking-wider mt-1">Match #{match.match_number} • {format(new Date(match.match_time), 'MMM d')}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#1A1A1A] text-[#A1A1AA] hover:text-white transition-colors">
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full text-muted-foreground hover:text-foreground">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-5 sm:p-6 overflow-y-auto flex-1">
           {!locked && <LockTimer lockTime={match.lock_time} onLocked={() => setLocked(true)} />}
 
           {locked && (
-            <div className="px-4 py-3 bg-[#EF4444]/10 text-[#EF4444] rounded-xl border border-[#EF4444]/20 flex items-center justify-center gap-2 font-semibold text-sm mb-6">
+            <div className="px-4 py-3 bg-destructive/10 text-destructive rounded-xl border border-destructive/20 flex items-center justify-center gap-2 font-semibold text-sm mb-6">
               <Lock size={14} /> Predictions are locked
             </div>
           )}
@@ -178,23 +181,23 @@ export default function PredictionForm({
             {/* Winner Selection */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-xs uppercase font-bold tracking-wider text-[#A1A1AA] font-body">Match Winner</label>
-                <div className="text-[10px] font-bold bg-white/10 text-white px-2 py-0.5 rounded">+10 PTS</div>
+                <label className="text-xs uppercase font-bold tracking-wider text-muted-foreground font-body">Match Winner</label>
+                <div className="text-[10px] font-bold bg-primary/20 text-primary-foreground px-2 py-0.5 rounded">+10 PTS</div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setWinner(match.team_home)}
                   className={`relative overflow-hidden p-6 rounded-xl border flex flex-col items-center justify-center transition-all
-                    ${winner === match.team_home ? 'bg-white border-white shadow-xl' : 'bg-[#111] border-[#222] hover:border-[#444]'}`}
+                    ${winner === match.team_home ? 'bg-primary border-primary shadow-xl' : 'bg-accent border-border hover:border-muted-foreground'}`}
                 >
-                  <span className={`font-display text-2xl font-medium tracking-tight mb-1 relative z-10 ${winner === match.team_home ? 'text-black' : 'text-white'}`}>
+                  <span className={`font-display text-2xl font-medium tracking-tight mb-1 relative z-10 ${winner === match.team_home ? 'text-primary-foreground' : 'text-foreground'}`}>
                     {match.team_home}
                   </span>
-                  <span className={`font-body text-[10px] font-semibold uppercase tracking-wider relative z-10 ${winner === match.team_home ? 'text-black/60' : 'text-[#52525B]'}`}>
+                  <span className={`font-body text-[10px] font-semibold uppercase tracking-wider relative z-10 ${winner === match.team_home ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                     {match.team_home_full}
                   </span>
                   {winner === match.team_home && (
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3 text-black">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3 text-primary-foreground">
                       <Check size={16} />
                     </motion.div>
                   )}
@@ -203,16 +206,16 @@ export default function PredictionForm({
                 <button
                   onClick={() => setWinner(match.team_away)}
                   className={`relative overflow-hidden p-6 rounded-xl border flex flex-col items-center justify-center transition-all
-                    ${winner === match.team_away ? 'bg-white border-white shadow-xl' : 'bg-[#111] border-[#222] hover:border-[#444]'}`}
+                    ${winner === match.team_away ? 'bg-primary border-primary shadow-xl' : 'bg-accent border-border hover:border-muted-foreground'}`}
                 >
-                  <span className={`font-display text-2xl font-medium tracking-tight mb-1 relative z-10 ${winner === match.team_away ? 'text-black' : 'text-white'}`}>
+                  <span className={`font-display text-2xl font-medium tracking-tight mb-1 relative z-10 ${winner === match.team_away ? 'text-primary-foreground' : 'text-foreground'}`}>
                     {match.team_away}
                   </span>
-                  <span className={`font-body text-[10px] font-semibold uppercase tracking-wider relative z-10 ${winner === match.team_away ? 'text-black/60' : 'text-[#52525B]'}`}>
+                  <span className={`font-body text-[10px] font-semibold uppercase tracking-wider relative z-10 ${winner === match.team_away ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                     {match.team_away_full}
                   </span>
                   {winner === match.team_away && (
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3 text-black">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3 text-primary-foreground">
                       <Check size={16} />
                     </motion.div>
                   )}
@@ -220,15 +223,15 @@ export default function PredictionForm({
               </div>
             </div>
 
-            <div className="h-px bg-[#222] -mx-5 sm:-mx-6" />
+            <div className="h-px bg-border -mx-5 sm:-mx-6" />
 
             {/* Runs Bracket */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-xs uppercase font-bold tracking-wider text-[#A1A1AA] font-body">1st Innings Score</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-muted-foreground font-body">1st Innings Score</label>
                 <div className="flex items-center gap-2">
-                   <div className="text-[10px] font-bold text-[#52525B] uppercase">Optional</div>
-                   <div className="text-[10px] font-bold bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded">+12 PTS</div>
+                   <div className="text-[10px] font-bold text-muted-foreground uppercase">Optional</div>
+                   <div className="text-[10px] font-bold bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded">+12 PTS</div>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -237,7 +240,7 @@ export default function PredictionForm({
                     key={b}
                     onClick={() => setRunsBracket(runsBracket === b ? '' : b)}
                     className={`px-4 py-2 rounded-lg font-body text-sm font-semibold transition-all border
-                      ${runsBracket === b ? 'bg-white text-black border-white shadow-md' : 'bg-transparent text-[#A1A1AA] border-[#333] hover:border-[#555]'}`}
+                      ${runsBracket === b ? 'bg-primary text-primary-foreground border-primary shadow-md' : 'bg-transparent text-muted-foreground border-border hover:border-muted-foreground'}`}
                   >
                     {b}
                   </button>
@@ -245,24 +248,24 @@ export default function PredictionForm({
               </div>
             </div>
 
-            <div className="h-px bg-[#222] -mx-5 sm:-mx-6" />
+            <div className="h-px bg-border -mx-5 sm:-mx-6" />
 
             {/* Top Scorer */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-xs uppercase font-bold tracking-wider text-[#A1A1AA] font-body">Top Scorer</label>
+                <label className="text-xs uppercase font-bold tracking-wider text-muted-foreground font-body">Top Scorer</label>
                 <div className="flex items-center gap-2">
-                   <div className="text-[10px] font-bold text-[#52525B] uppercase">Optional</div>
-                   <div className="text-[10px] font-bold bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded">+15 PTS</div>
+                   <div className="text-[10px] font-bold text-muted-foreground uppercase">Optional</div>
+                   <div className="text-[10px] font-bold bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded">+15 PTS</div>
                 </div>
               </div>
               <PlayerSearchInput value={topScorer} onChange={setTopScorer} options={allPlayers} />
               {topScorer && (
-                <div className="flex items-center justify-between mt-3 px-4 py-3 bg-[#111] border border-[#222] rounded-xl">
-                  <span className="text-sm font-semibold">{topScorer}</span>
-                  <button onClick={() => setTopScorer('')} className="text-[#52525B] hover:text-[#EF4444] transition-colors p-1">
+                <div className="flex items-center justify-between mt-3 px-4 py-3 bg-accent border border-border rounded-xl">
+                  <span className="text-sm font-semibold text-foreground">{topScorer}</span>
+                  <Button variant="ghost" size="icon" onClick={() => setTopScorer('')} className="h-6 w-6 text-muted-foreground hover:text-destructive">
                     <X size={14} />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -271,36 +274,36 @@ export default function PredictionForm({
         </div>
         
         {/* Footer */}
-        <div className="p-5 sm:p-6 border-t border-[#222] bg-[#0A0A0A]">
+        <div className="p-5 sm:p-6 border-t border-border bg-card">
            {pointsPreview > 0 && !locked && (
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-body font-semibold text-[#A1A1AA] uppercase tracking-wide">Potential Setup</span>
-              <span className="font-display text-xl font-medium">+{pointsPreview} <span className="text-xs text-[#52525B]">PTS</span></span>
+              <span className="text-xs font-body font-semibold text-muted-foreground uppercase tracking-wide">Potential Setup</span>
+              <span className="font-display text-xl font-medium text-foreground">+{pointsPreview} <span className="text-xs text-muted-foreground">PTS</span></span>
             </div>
           )}
 
-          {error && <p className="text-[#EF4444] text-xs font-semibold mb-4 text-center bg-[#EF4444]/10 py-2 rounded border border-[#EF4444]/20">{error}</p>}
+          {error && <p className="text-destructive text-xs font-semibold mb-4 text-center bg-destructive/10 py-2 rounded border border-destructive/20">{error}</p>}
 
           <AnimatePresence mode="wait">
             {success ? (
               <motion.div
                 key="success"
                 initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                className="w-full py-4 rounded-xl flex items-center justify-center gap-2 font-semibold text-white bg-[#10B981] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                className="w-full py-4 rounded-xl flex items-center justify-center gap-2 font-semibold text-primary-foreground bg-success shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               >
                 <Check size={20} /> Locked!
               </motion.div>
             ) : (
-              <button
+              <Button
                 key="submit"
+                size="lg"
                 onClick={handleSubmit}
                 disabled={loading || locked || !winner}
-                className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-semibold transition-all
-                  ${loading || locked || !winner ? 'bg-[#1A1A1A] text-[#52525B] border border-[#333]' : 'bg-white text-black hover:opacity-90'}`}
+                className="w-full py-6 rounded-xl font-semibold gap-2 text-lg"
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                     Saving...
                   </>
                 ) : (
@@ -309,7 +312,7 @@ export default function PredictionForm({
                     {existingPrediction ? 'Update Pick' : 'Lock Pick'}
                   </>
                 )}
-              </button>
+              </Button>
             )}
           </AnimatePresence>
         </div>

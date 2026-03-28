@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Trophy, ArrowRight, Code, Sparkles, Activity } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
 // ─── Hero ─────────────────────────────────────────────────────
 function HeroSection() {
@@ -17,9 +21,9 @@ function HeroSection() {
       
       {/* Badge */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-6 flex justify-center lg:justify-start">
-        <span className="badge badge-live">
-          <span className="live-dot" /> IPL 2026 Live
-        </span>
+        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-2 py-1 px-3">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> IPL 2026 Live
+        </Badge>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
@@ -40,28 +44,31 @@ function HeroSection() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row w-full max-w-xl gap-4">
             
-            <button 
+            <Button 
+              size="lg"
               onClick={() => router.push('/create')}
-              className="bg-white text-black font-display font-bold text-lg rounded-full px-8 py-4 cursor-pointer hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shrink-0 shadow-xl shadow-white/10 whitespace-nowrap">
+              className="rounded-full px-8 py-6 text-lg font-bold gap-2 shrink-0 shadow-xl shadow-white/10 whitespace-nowrap">
               <Sparkles size={20} strokeWidth={2.5}/> Create Room
-            </button>
+            </Button>
 
-              <div className="flex flex-1 relative w-full items-center">
-                <input
-                  className="w-full bg-[#111] border-2 border-[#333] focus:border-[#555] focus:bg-[#1A1A1A] text-white rounded-full pl-6 pr-16 py-4 font-display font-bold text-lg uppercase tracking-widest sm:text-left text-center outline-none transition-all placeholder:text-[#52525B]"
-                  placeholder="ROOM CODE"
-                  value={code}
-                  maxLength={6}
-                  onChange={e => setCode(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === 'Enter' && handleJoin()}
-                />
-                <button 
-                  onClick={handleJoin}
-                  className={`absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center rounded-full transition-all 
-                    ${code.trim().length >= 4 ? 'bg-white text-black cursor-pointer shadow-md' : 'bg-[#1A1A1A] text-[#52525B] cursor-not-allowed'}`}>
-                  <ArrowRight size={20} className="w-5 h-5" strokeWidth={2.5} />
-                </button>
-              </div>
+            <div className="flex flex-1 relative w-full items-center">
+              <Input
+                className="w-full rounded-full pl-6 pr-16 py-6 font-display font-bold text-lg uppercase tracking-widest sm:text-left text-center shadow-none border-2 transition-all focus-visible:ring-1 focus-visible:ring-offset-0 placeholder:text-muted-foreground bg-input"
+                placeholder="ROOM CODE"
+                value={code}
+                maxLength={6}
+                onChange={e => setCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleJoin()}
+              />
+              <Button 
+                size="icon"
+                onClick={handleJoin}
+                variant={code.trim().length >= 4 ? "default" : "secondary"}
+                disabled={code.trim().length < 4}
+                className="absolute right-2 top-2 bottom-2 rounded-full aspect-square w-10 h-10">
+                <ArrowRight size={18} strokeWidth={2.5} />
+              </Button>
+            </div>
           </motion.div>
         </div>
 
@@ -70,33 +77,33 @@ function HeroSection() {
           className="flex-1 w-full max-w-lg relative">
           
           {/* Stylized browser window / app frame */}
-          <div className="clean-card p-2 sm:p-4 rounded-3xl relative z-10 overflow-hidden shadow-2xl">
+          <Card className="p-2 sm:p-4 rounded-3xl relative z-10 overflow-hidden shadow-2xl bg-card border-border">
             {/* Window header */}
-            <div className="flex items-center gap-2 px-3 py-2 mb-4 border-b border-[rgba(255,255,255,0.05)]">
-              <div className="w-3 h-3 rounded-full bg-[#EF4444]/80" />
-              <div className="w-3 h-3 rounded-full bg-[#F59E0B]/80" />
-              <div className="w-3 h-3 rounded-full bg-[#10B981]/80" />
+            <div className="flex items-center gap-2 px-3 py-2 mb-4 border-b border-border/50">
+              <div className="w-3 h-3 rounded-full bg-destructive/80" />
+              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+              <div className="w-3 h-3 rounded-full bg-success/80" />
             </div>
 
             {/* Fake Content */}
-            <div className="p-4 space-y-4">
+            <CardContent className="p-0 space-y-4">
               <div className="flex justify-between items-center mb-6">
-                <div className="w-32 h-6 rounded bg-[#222]" />
-                <div className="w-16 h-6 rounded-full bg-[#333]" />
+                <div className="w-32 h-6 rounded bg-muted" />
+                <div className="w-16 h-6 rounded-full bg-accent" />
               </div>
 
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-[rgba(255,255,255,0.05)] bg-[#111]">
-                  <div className="w-10 h-10 rounded-full bg-[#222]" />
+                <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-accent/30">
+                  <div className="w-10 h-10 rounded-full bg-accent" />
                   <div className="flex-1">
-                    <div className="w-24 h-4 rounded bg-[#333] mb-2" />
-                    <div className="w-16 h-3 rounded bg-[#222]" />
+                    <div className="w-24 h-4 rounded bg-muted mb-2" />
+                    <div className="w-16 h-3 rounded bg-accent" />
                   </div>
-                  <div className="w-12 h-6 rounded bg-[#333]" />
+                  <div className="w-12 h-6 rounded bg-muted" />
                 </div>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
           {/* Subtle glow behind card */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-white rounded-full blur-[120px] opacity-[0.03] pointer-events-none -z-10" />
@@ -139,14 +146,14 @@ function FeaturesSection() {
         {features.map((f, i) => (
           <motion.div key={f.title}
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-            className="clean-card !p-8 flex flex-col items-start hover:-translate-y-1 cursor-default">
-            
-            <div className="w-12 h-12 rounded-full border border-[rgba(255,255,255,0.1)] bg-[#111] flex items-center justify-center mb-6">
-              {f.icon}
-            </div>
-            <h3 className="mb-2 font-display text-xl font-medium tracking-tight text-white">{f.title}</h3>
-            <p className="text-[#A1A1AA] text-sm leading-relaxed font-body">{f.desc}</p>
+            viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+            <Card className="h-full p-8 flex flex-col items-start hover:-translate-y-1 transition-transform cursor-default bg-card border-border">
+              <div className="w-12 h-12 rounded-full border border-border bg-accent/30 flex items-center justify-center mb-6">
+                {f.icon}
+              </div>
+              <h3 className="mb-2 font-display text-xl font-medium tracking-tight text-foreground">{f.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed font-body">{f.desc}</p>
+            </Card>
           </motion.div>
         ))}
       </div>

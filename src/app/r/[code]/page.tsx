@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { Users, Share2, ArrowLeft, Calendar, CheckCircle2, XCircle, Minus } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 import { createClient } from '@/lib/supabase/client'
 import { getFingerprint, getPlayerSession, savePlayerSession } from '@/lib/fingerprint'
@@ -101,11 +103,11 @@ function PredictTab({
       )}
 
       {upcoming.length === 0 && live.length === 0 && (
-        <div className="clean-card text-center py-16">
-          <div className="text-3xl mb-4 text-[#52525B]">🏏</div>
+        <Card className="text-center py-16 bg-card border-border">
+          <div className="text-3xl mb-4 text-muted-foreground">🏏</div>
           <h3 className="font-display text-2xl font-medium mb-2">No Matches Scheduled</h3>
-          <p className="text-[#A1A1AA] text-sm font-body">Check back later for upcoming fixtures.</p>
-        </div>
+          <p className="text-muted-foreground text-sm font-body">Check back later for upcoming fixtures.</p>
+        </Card>
       )}
 
       <AnimatePresence>
@@ -142,30 +144,32 @@ function HistoryTab({
 
   if (completed.length === 0) {
     return (
-      <div className="clean-card text-center py-16 pb-24">
-        <div className="text-3xl mb-4 text-[#52525B]">📊</div>
+      <Card className="text-center py-16 pb-24 bg-card border-border">
+        <div className="text-3xl mb-4 text-muted-foreground">📊</div>
         <h3 className="font-display text-2xl font-medium mb-2">No History Yet</h3>
-        <p className="text-[#A1A1AA] text-sm">Completed match results will appear here.</p>
-      </div>
+        <p className="text-muted-foreground text-sm">Completed match results will appear here.</p>
+      </Card>
     )
   }
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="clean-card grid grid-cols-3 gap-4 !p-6 border border-[#222]">
-        <div className="text-center">
-          <div className="font-display text-3xl font-medium text-white">{totalPts}</div>
-          <div className="font-body text-xs text-[#A1A1AA] uppercase tracking-wider mt-1">Total Pts</div>
-        </div>
-        <div className="text-center border-l border-r border-[#222]">
-          <div className="font-display text-3xl font-medium text-[#10B981]">{correct}</div>
-          <div className="font-body text-xs text-[#A1A1AA] uppercase tracking-wider mt-1">Correct</div>
-        </div>
-        <div className="text-center">
-          <div className="font-display text-3xl font-medium text-white">{completed.length}</div>
-          <div className="font-body text-xs text-[#A1A1AA] uppercase tracking-wider mt-1">Matches</div>
-        </div>
-      </div>
+      <Card className="grid grid-cols-3 gap-4 border-border bg-card">
+        <CardContent className="p-6 col-span-3 grid grid-cols-3">
+          <div className="text-center">
+            <div className="font-display text-3xl font-medium text-foreground">{totalPts}</div>
+            <div className="font-body text-xs text-muted-foreground uppercase tracking-wider mt-1">Total Pts</div>
+          </div>
+          <div className="text-center border-l border-r border-border">
+            <div className="font-display text-3xl font-medium text-success">{correct}</div>
+            <div className="font-body text-xs text-muted-foreground uppercase tracking-wider mt-1">Correct</div>
+          </div>
+          <div className="text-center">
+            <div className="font-display text-3xl font-medium text-foreground">{completed.length}</div>
+            <div className="font-body text-xs text-muted-foreground uppercase tracking-wider mt-1">Matches</div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-4">
       {completed.map((match, idx) => {
@@ -241,68 +245,70 @@ function RoomTab({
 }) {
   return (
     <div className="space-y-6 pb-24">
-      <div className="clean-card !p-6 border border-[#222]">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="font-display text-xs text-[#A1A1AA] uppercase tracking-widest mb-1">IPL 2026 Room</div>
-            <h3 className="font-display text-2xl font-medium tracking-tight mb-1">{room.name}</h3>
+      <Card className="border-border bg-card">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className="font-display text-xs text-muted-foreground uppercase tracking-widest mb-1">IPL 2026 Room</div>
+              <h3 className="font-display text-2xl font-medium tracking-tight mb-1">{room.name}</h3>
+            </div>
+            <div className="text-right">
+              <div className="font-display text-3xl font-medium tracking-widest">{room.code}</div>
+              <div className="font-body text-xs text-muted-foreground">Access Code</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="font-display text-3xl font-medium tracking-widest">{room.code}</div>
-            <div className="font-body text-xs text-[#A1A1AA]">Access Code</div>
-          </div>
-        </div>
 
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1 rounded-xl bg-[#111] border border-[#222] py-4 text-center">
-            <div className="font-display text-2xl font-medium">{players.length}</div>
-            <div className="font-body text-xs text-[#A1A1AA]">Players</div>
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1 rounded-xl bg-accent border border-border py-4 text-center">
+              <div className="font-display text-2xl font-medium">{players.length}</div>
+              <div className="font-body text-xs text-muted-foreground">Players</div>
+            </div>
+            <div className="flex-1 rounded-xl bg-accent border border-border py-4 text-center">
+              <div className="font-display text-2xl font-medium">2026</div>
+              <div className="font-body text-xs text-muted-foreground">Season</div>
+            </div>
           </div>
-          <div className="flex-1 rounded-xl bg-[#111] border border-[#222] py-4 text-center">
-            <div className="font-display text-2xl font-medium">2026</div>
-            <div className="font-body text-xs text-[#A1A1AA]">Season</div>
-          </div>
-        </div>
 
-        <button onClick={onShowInvite} className="clean-btn w-full">
-          <Share2 size={16} /> Invite Friends
-        </button>
-      </div>
+          <Button size="lg" onClick={onShowInvite} className="w-full gap-2 font-semibold">
+            <Share2 size={16} /> Invite Friends
+          </Button>
+        </CardContent>
+      </Card>
 
-      <div className="clean-card !p-0 overflow-hidden border border-[#222]">
-        <div className="px-6 py-4 bg-[#111] flex flex-row items-center justify-between border-b border-[#222]">
-          <h4 className="font-display text-sm uppercase tracking-widest font-medium flex items-center gap-2 text-[#A1A1AA]">
+      <Card className="overflow-hidden border-border bg-card p-0">
+        <div className="px-6 py-4 bg-accent flex flex-row items-center justify-between border-b border-border">
+          <h4 className="font-display text-sm uppercase tracking-widest font-medium flex items-center gap-2 text-muted-foreground">
             <Users size={14} /> Rosters
           </h4>
         </div>
-        <div className="divide-y divide-[#222]">
+        <div className="divide-y divide-border">
           {[...players].sort((a, b) => b.total_points - a.total_points).map((p, i) => (
             <div key={p.id} className={`flex items-center justify-between px-6 py-4 transition-colors
-              ${p.id === currentPlayerId ? 'bg-white/5' : 'bg-transparent'}`}>
+              ${p.id === currentPlayerId ? 'bg-accent/40' : 'bg-transparent'}`}>
               <div className="flex items-center gap-4">
-                <span className="font-display text-sm text-[#52525B] w-4">{i + 1}</span>
+                <span className="font-display text-sm text-muted-foreground w-4">{i + 1}</span>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-lg font-medium border
-                  ${p.id === currentPlayerId ? 'bg-white text-black border-white' : 'bg-[#1A1A1A] text-[#A1A1AA] border-[#333]'}`}>
+                  ${p.id === currentPlayerId ? 'bg-primary text-primary-foreground border-primary' : 'bg-accent text-accent-foreground border-border'}`}>
                   {p.display_name[0].toUpperCase()}
                 </div>
                 <div className="flex flex-col">
                   <div className="flex justify-center items-center gap-2">
-                    <span className={`text-sm font-medium font-body ${p.id === currentPlayerId ? 'text-white' : 'text-[#A1A1AA]'}`}>
+                    <span className={`text-sm font-medium font-body ${p.id === currentPlayerId ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {p.display_name}
                     </span>
                     {p.id === currentPlayerId && (
-                      <span className="text-[10px] font-semibold bg-white text-black px-1.5 py-0.5 rounded">YOU</span>
+                      <span className="text-[10px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded">YOU</span>
                     )}
                   </div>
                 </div>
               </div>
-              <span className={`font-display text-lg font-medium ${p.id === currentPlayerId ? 'text-white' : 'text-[#A1A1AA]'}`}>
+              <span className={`font-display text-lg font-medium ${p.id === currentPlayerId ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {p.total_points}
               </span>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
@@ -426,14 +432,14 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   if (notFound) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="clean-card max-w-sm w-full text-center border-[#EF4444]/20">
+        <Card className="max-w-sm w-full text-center border-destructive/20 bg-card p-8">
           <div className="text-4xl mb-4">🤷</div>
-          <h2 className="font-display text-2xl font-medium mb-2">Room not found</h2>
-          <p className="text-[#A1A1AA] text-sm mb-6">Double check your code: <strong className="text-white">{code}</strong></p>
-          <button onClick={() => router.push('/')} className="clean-btn w-full">
+          <h2 className="font-display text-2xl font-medium mb-2 text-foreground">Room not found</h2>
+          <p className="text-muted-foreground text-sm mb-6">Double check your code: <strong className="text-foreground">{code}</strong></p>
+          <Button onClick={() => router.push('/')} className="w-full">
             Return Home
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     )
   }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Lock, Trophy, Check } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { TEAM_CODES } from '@/lib/teams'
 import { getTeamColors } from '@/lib/teams'
 import { createClient } from '@/lib/supabase/client'
@@ -72,28 +74,28 @@ export default function SeasonPredictions({ playerId, roomId }: SeasonPrediction
     setTimeout(() => setSaved(false), 2000)
   }
 
-  if (loading) return <div className="w-full h-40 rounded-xl bg-[#111] animate-pulse" />
+  if (loading) return <div className="w-full h-40 rounded-xl bg-accent animate-pulse" />
 
   return (
-    <div className="clean-card !p-6 border-[#222]">
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h3 className="font-display text-2xl font-medium tracking-tight mb-1">Season Bets</h3>
-          <p className="font-body text-xs text-[#A1A1AA] uppercase tracking-wider font-semibold">One-time picks for IPL 2026</p>
+    <Card className="border-border bg-card">
+      <CardHeader className="flex flex-row items-start justify-between pb-6">
+        <div className="space-y-1">
+          <CardTitle className="font-display text-2xl tracking-tight">Season Bets</CardTitle>
+          <CardDescription className="font-body text-xs uppercase tracking-wider font-semibold">One-time picks for IPL 2026</CardDescription>
         </div>
         <div className="text-right">
-          <div className="font-body text-[10px] text-[#A1A1AA] uppercase tracking-wider font-semibold">Bonus</div>
-          <div className="font-display text-xl font-medium tracking-tight text-[#10B981]">+110pts</div>
+          <div className="font-body text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Bonus</div>
+          <div className="font-display text-xl font-medium tracking-tight text-success">+110pts</div>
         </div>
-      </div>
+      </CardHeader>
 
-      <div className="space-y-6">
+      <CardContent className="space-y-6">
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="font-body text-xs font-bold uppercase tracking-wider text-[#A1A1AA]">
+            <label className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
               🏆 IPL Champion
             </label>
-            <span className="text-[10px] font-bold bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded">
               +50 PTS
             </span>
           </div>
@@ -107,9 +109,9 @@ export default function SeasonPredictions({ playerId, roomId }: SeasonPrediction
                   onClick={() => setChampion(active ? '' : code)}
                   className={`py-3 rounded-lg font-display text-sm font-medium transition-all focus:outline-none`}
                   style={{
-                    background: active ? team.primary : '#1A1A1A',
-                    color: active ? team.textColor : '#71717A',
-                    border: active ? `1px solid ${team.primary}` : '1px solid #333',
+                    background: active ? team.primary : 'var(--accent)',
+                    color: active ? team.textColor : 'var(--muted-foreground)',
+                    border: active ? `1px solid ${team.primary}` : '1px solid var(--border)',
                   }}
                 >
                   {code}
@@ -121,13 +123,13 @@ export default function SeasonPredictions({ playerId, roomId }: SeasonPrediction
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="font-body text-xs font-bold uppercase tracking-wider text-[#A1A1AA]">
+            <label className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
               🟠 Orange Cap
             </label>
-            <span className="text-[10px] font-bold text-[#52525B] uppercase">+30 PTS</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase">+30 PTS</span>
           </div>
           <select
-            className="clean-input w-full text-sm appearance-none bg-[#1A1A1A] border border-[#333] hover:border-[#555] cursor-pointer"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer"
             value={orangeCap}
             onChange={(e) => setOrangeCap(e.target.value)}
           >
@@ -138,13 +140,13 @@ export default function SeasonPredictions({ playerId, roomId }: SeasonPrediction
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="font-body text-xs font-bold uppercase tracking-wider text-[#A1A1AA]">
+            <label className="font-body text-xs font-bold uppercase tracking-wider text-muted-foreground">
               🟣 Purple Cap
             </label>
-            <span className="text-[10px] font-bold text-[#52525B] uppercase">+30 PTS</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase">+30 PTS</span>
           </div>
           <select
-            className="clean-input w-full text-sm appearance-none bg-[#1A1A1A] border border-[#333] hover:border-[#555] cursor-pointer"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer"
             value={purpleCap}
             onChange={(e) => setPurpleCap(e.target.value)}
           >
@@ -153,28 +155,34 @@ export default function SeasonPredictions({ playerId, roomId }: SeasonPrediction
           </select>
         </div>
 
-        {error && <p className="text-[#EF4444] text-xs font-bold bg-[#EF4444]/10 p-2 rounded">{error}</p>}
+        {error && <p className="text-destructive text-xs font-bold bg-destructive/10 p-2 rounded">{error}</p>}
 
         <div className="pt-2">
           {existing ? (
             <div className="space-y-3">
-              <div className="bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold">
+              <div className="bg-success/10 text-success border border-success/20 rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold">
                 <Check size={16} /> Submitted ({existing.predicted_champion})
               </div>
-              <button onClick={handleSave} disabled={saving} className="w-full py-3 text-[#A1A1AA] hover:text-white font-semibold transition-colors border border-[#333] hover:border-white rounded-xl bg-transparent">
+              <Button variant="outline" size="lg" onClick={handleSave} disabled={saving} className="w-full text-muted-foreground hover:text-foreground">
                 {saving ? 'Updating...' : 'Update Season Picks'}
-              </button>
+              </Button>
             </div>
           ) : (
-            <button onClick={handleSave} disabled={saving || !champion} className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-semibold transition-colors
-              ${saving || !champion ? 'bg-[#1A1A1A] text-[#52525B] cursor-not-allowed border border-[#333]' : 'bg-white text-black hover:bg-gray-200'}`}>
+            <Button
+              size="lg"
+              onClick={handleSave}
+              disabled={saving || !champion}
+              className={`w-full gap-2 rounded-xl text-lg font-semibold ${
+                saving || !champion ? 'bg-accent text-muted-foreground hover:bg-accent border hover:border-border' : ''
+              }`}
+            >
               {saved ? <><Check size={16} /> Locked!</> :
-                saving ? <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> Saving...</> :
+                saving ? <><div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> Saving...</> :
                 <><Trophy size={16} /> Lock Season Bets</>}
-            </button>
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
