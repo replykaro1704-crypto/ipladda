@@ -3,9 +3,5 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["bom1"],
-  "crons": [
-    { "path": "/api/cron/match-status", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/sync-results", "schedule": "*/30 * * * *" }
-  ]
+  "regions": ["bom1"]
 }
