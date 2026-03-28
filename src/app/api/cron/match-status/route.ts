@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 
 export async function GET(req: NextRequest) {
-  // Verify cron secret
+  // Verify cron secret (Allow both Header and Query Param for manual browser triggers)
   const authHeader = req.headers.get('authorization')
+  const searchParams = req.nextUrl.searchParams
   const cronSecret = process.env.CRON_SECRET
+  const providedSecret = searchParams.get('secret')
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || (authHeader !== `Bearer ${cronSecret}` && providedSecret !== cronSecret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

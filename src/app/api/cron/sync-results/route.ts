@@ -3,7 +3,12 @@ import { adminSupabase } from '@/lib/supabase/admin'
 import { scorePredictions } from '@/lib/cricket-sync'
 
 export async function GET(req: Request) {
-  if (req.headers.get('Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  const { searchParams } = new URL(req.url)
+  const querySecret = searchParams.get('secret')
+  const authHeader = req.headers.get('Authorization')
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret || (authHeader !== `Bearer ${cronSecret}` && querySecret !== cronSecret)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
