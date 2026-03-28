@@ -22,6 +22,7 @@ import AdminPanel from '@/components/AdminPanel'
 import RoomInvite from '@/components/RoomInvite'
 import MatchCountdown from '@/components/MatchCountdown'
 import SeasonPredictions from '@/components/SeasonPredictions'
+import { ShareModal } from '@/components/ShareCard'
 
 // ─── Join flow ────────────────────────────────────────────────
 async function joinRoom(roomId: string, name: string, fingerprint: string) {
@@ -132,15 +133,19 @@ function PredictTab({
 
 // ─── History Tab ──────────────────────────────────────────────
 function HistoryTab({
-  matches, predictions, currentPlayerId,
+  matches, predictions, currentPlayer, room, players
 }: {
-  matches: Match[], predictions: Prediction[], currentPlayerId: string
+  matches: Match[], predictions: Prediction[], currentPlayer: any, room: Room, players: any[]
 }) {
+  const [sharingMatch, setSharingMatch] = useState<Match | null>(null)
   const completed = [...matches.filter((m) => m.status === 'completed')].reverse()
 
-  const myPreds = predictions.filter((p) => p.player_id === currentPlayerId && p.points_earned !== undefined)
+  const myPreds = predictions.filter((p) => p.player_id === currentPlayer?.id && p.points_earned !== undefined)
   const totalPts = myPreds.reduce((s, p) => s + (p.points_earned ?? 0), 0)
   const correct = myPreds.filter((p) => p.winner_correct).length
+
+  const sortedPlayers = [...players].sort((a, b) => b.total_points - a.total_points)
+  const myRank = sortedPlayers.findIndex(p => p.id === currentPlayer?.id) + 1
 
   if (completed.length === 0) {
     return (
@@ -173,7 +178,7 @@ function HistoryTab({
 
       <div className="space-y-4">
       {completed.map((match, idx) => {
-        const pred = predictions.find((p) => p.match_id === match.id && p.player_id === currentPlayerId)
+        const pred = predictions.find((p) => p.match_id === match.id && p.player_id === currentPlayer.id)
         const won = pred?.winner_correct
         return (
           <motion.div key={match.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
@@ -209,6 +214,14 @@ function HistoryTab({
                   <div className={`font-display text-2xl font-medium ${pred.points_earned > 0 ? 'text-white' : 'text-[#52525B]'}`}>
                     +{pred.points_earned}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSharingMatch(match)}
+                    className="h-8 w-8 rounded-full text-[#A1A1AA] hover:text-white hover:bg-[#222]"
+                  >
+                    <Share2 size={16} />
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 pt-4 border-t border-[#222] text-[#52525B]">
@@ -221,6 +234,21 @@ function HistoryTab({
         )
       })}
       </div>
+
+      <AnimatePresence>
+        {sharingMatch && (
+          <ShareModal
+            player={currentPlayer}
+            match={sharingMatch}
+            prediction={predictions.find(p => p.match_id === sharingMatch.id && p.player_id === currentPlayer.id)!}
+            rank={myRank}
+            totalPlayers={players.length}
+            roomName={room.name}
+            roomCode={room.code}
+            onClose={() => setSharingMatch(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -467,7 +495,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       </header>
 
       {nextMatch && currentPlayer && (
-        <div className="max-w-2xl mx-auto w-full px-4 mt-4 hidden sm:block">
+        <div className="max-w-2xl mx-auto w-full px-4 mt-4">
           <MatchCountdown match={nextMatch} onPredict={() => setActiveTab('predict')} />
         </div>
       )}
@@ -515,7 +543,13 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
 
           {activeTab === 'history' && currentPlayer && (
             <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <HistoryTab matches={matches} predictions={predictions} currentPlayerId={currentPlayer.id} />
+              <HistoryTab 
+                matches={matches} 
+                predictions={predictions} 
+                currentPlayer={currentPlayer}
+                room={room}
+                players={players}
+              />
             </motion.div>
           )}
 
