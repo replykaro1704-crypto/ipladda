@@ -345,39 +345,18 @@ function calculateMatchStatus(startTime: Date): 'upcoming' | 'live' | 'completed
 export async function getIPLMatches(): Promise<NormalizedMatch[]> {
   const allFound: NormalizedMatch[] = []
 
-  // 1. Primary: EntitySport FULL Competition Fetch (Best for upcoming)
+  // 1. Primary: RapidAPI SERIES Fetch (Best for 2026 Full Season)
+  // Series ID 9241 = Indian Premier League 2026
   try {
-    const r = await fetchEntity(`/competitions/${IPL_CID}/matches/`, { per_page: '100' })
-    const items = r.items || []
-    
-    const entityMatches = items.map((m: any) => {
-      const originalTime = new Date(m.date_start)
-      // Force Year 2026 calibration for testing sync
-      if (originalTime.getFullYear() < 2026) {
-        originalTime.setFullYear(2026)
-      }
-      return {
-        externalId: m.match_id.toString(),
-        provider: 'entity' as const,
-        matchNumber: m.match_number || 0,
-        seriesName: m.competition?.title || 'IPL 2026',
-        teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
-        teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
-        venue: m.venue?.name || getVenueFallback(m.teama?.name || m.teama?.short_name),
-        city: m.venue?.location || '',
-        startTime: originalTime,
-        status: calculateMatchStatus(originalTime),
-      } as NormalizedMatch
-    })
+     const data = await fetchRapidAPI('/series/v1/9241')
+     const matches = normalizeRapidAPIMatches(data)
+     allFound.push(...matches.filter((m: NormalizedMatch) => 
+       IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+       IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+     ))
+  } catch (e: any) { console.error('RapidAPI Series sync failed:', e.message) }
 
-    // Push ALL matches where teams are IPL-branded (ignoring strict year labels)
-    allFound.push(...entityMatches.filter((m: NormalizedMatch) => 
-      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
-      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
-    ))
-  } catch (e: any) { console.error('Season CID sync failed:', e.message) }
-
-  // 2. Secondary: RapidAPI (Live & Upcoming)
+  // 2. Secondary: RapidAPI (Live & Upcoming global feed)
   try {
     const [live, upcoming] = await Promise.all([
       fetchRapidAPI('/matches/v1/live'),
@@ -392,7 +371,33 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
       IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
       IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
     ))
-  } catch (e: any) { console.error('RapidAPI sync failed:', e.message) }
+  } catch (e: any) { console.error('RapidAPI global sync failed:', e.message) }
+
+  // 3. EntitySport (CID 127579 check - Keep as fallback but beware 2023 labels)
+  try {
+    const r = await fetchEntity(`/competitions/${IPL_CID}/matches/`, { per_page: '100' })
+    const items = r.items || []
+    const entityMatches = items.map((m: any) => {
+      const originalTime = new Date(m.date_start)
+      if (originalTime.getFullYear() < 2026) originalTime.setFullYear(2026)
+      return {
+        externalId: m.match_id.toString(),
+        provider: 'entity' as const,
+        matchNumber: m.match_number || 0,
+        seriesName: m.competition?.title || 'IPL 2026',
+        teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
+        teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
+        venue: m.venue?.name || getVenueFallback(m.teama?.name || m.teama?.short_name),
+        city: m.venue?.location || '',
+        startTime: originalTime,
+        status: calculateMatchStatus(originalTime),
+      } as NormalizedMatch
+    })
+    allFound.push(...entityMatches.filter((m: NormalizedMatch) => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
+  } catch (e: any) { console.error('EntitySport fallback failed:', e.message) }
 
   // 3. Tertiary: CricketData (Match List)
   try {
