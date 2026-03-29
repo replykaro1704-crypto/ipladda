@@ -180,7 +180,7 @@ function normalizeRapidAPIMatches(data: any): NormalizedMatch[] {
             venue: info.venueInfo?.ground || getVenueFallback(info.team1?.teamName || info.team1?.teamSName),
             city: info.venueInfo?.city || '',
             startTime: d,
-            status: info.state === 'In Progress' ? 'live' : info.state === 'Completed' ? 'completed' : 'upcoming',
+            status: calculateMatchStatus(d),
             statusText: info.status || '',
           })
       }
@@ -328,6 +328,20 @@ function getVenueFallback(teamName: string): string {
   return 'Stadium'
 }
 
+function calculateMatchStatus(startTime: Date): 'upcoming' | 'live' | 'completed' {
+  const now = new Date()
+  const diffHours = (startTime.getTime() - now.getTime()) / 3600000
+
+  // If match starts in more than 4 hours → Upcoming
+  if (diffHours > 0) return 'upcoming'
+  
+  // If match started less than 4.5 hours ago → Live
+  if (diffHours >= -4.5) return 'live'
+  
+  // Otherwise → Completed
+  return 'completed'
+}
+
 export async function getIPLMatches(): Promise<NormalizedMatch[]> {
   const allFound: NormalizedMatch[] = []
 
@@ -352,7 +366,7 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
         venue: m.venue?.name || getVenueFallback(m.teama?.name || m.teama?.short_name),
         city: m.venue?.location || '',
         startTime: originalTime,
-        status: m.status_str?.toLowerCase().includes('live') ? 'live' : m.status_str?.toLowerCase().includes('completed') ? 'completed' : 'upcoming',
+        status: calculateMatchStatus(originalTime),
       } as NormalizedMatch
     })
 
