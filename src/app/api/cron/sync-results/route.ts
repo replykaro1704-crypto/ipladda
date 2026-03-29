@@ -12,12 +12,11 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get matches that need syncing
+  // Get matches that need syncing (any live/upcoming matches)
   const { data: matches } = await adminSupabase
     .from('matches')
-    .select('id, ext_rapidapi_id, ext_cricketdata_id, ext_entity_id, status, match_time')
+    .select('id, team_home, team_away, ext_rapidapi_id, ext_cricketdata_id, ext_entity_id, status, match_time')
     .or('status.eq.live,status.eq.upcoming')
-    .not('ext_rapidapi_id', 'is', null)
 
   const results = []
 
