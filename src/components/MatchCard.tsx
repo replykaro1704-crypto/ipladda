@@ -163,7 +163,7 @@ export default function MatchCard({ match, onPredict, hasPrediction, compact }: 
         )}
 
         <div className="flex items-center justify-center gap-1.5 mt-6 py-2.5 rounded border border-border bg-accent/30 font-body text-[11px] text-muted-foreground font-semibold">
-          <MapPin size={11} /> {match.venue}{match.city ? `, ${match.city}` : ''}
+          <MapPin size={11} /> {match.venue || 'Venue TBD'}{match.city ? `, ${match.city}` : ''}
         </div>
 
         {match.status === 'completed' && match.result_winner && (

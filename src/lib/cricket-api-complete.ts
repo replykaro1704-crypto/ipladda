@@ -346,32 +346,34 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
     ))
   } catch (e: any) { console.error('CricketData discovery failed:', e.message) }
 
-  // 3. Try EntitySport (Matches List)
+  // 3. Try EntitySport (Full Season Schedule)
   try {
-    const live = await fetchEntity('/matches/', { status: '1' })
-    const upcoming = await fetchEntity('/matches/', { status: '3' })
-    const entityMatches = [...(live.items || []), ...(upcoming.items || [])].map((m: any) => ({
+    const r = await fetchEntity('/matches/', { 
+      date: '2026-03-22_2026-06-01', 
+      per_page: '100' 
+    })
+    const entityMatches = (r.items || []).map((m: any) => ({
       externalId: m.match_id.toString(),
       provider: 'entity' as const,
-      matchNumber: 0,
-      seriesName: m.competition?.title || '',
+      matchNumber: m.match_number || 0,
+      seriesName: m.competition?.title || 'IPL 2026',
       teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
       teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
-      venue: m.venue?.name || 'Venue TBD',
+      venue: m.venue?.name || 'Stadium',
       city: m.venue?.location || '',
       startTime: new Date(m.date_start),
       status: m.status_str?.toLowerCase().includes('live') ? 'live' : m.status_str?.toLowerCase().includes('completed') ? 'completed' : 'upcoming',
     } as NormalizedMatch))
     
-    allFound.push(...entityMatches.filter(m => 
+    allFound.push(...entityMatches.filter((m: NormalizedMatch) => 
       IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
       IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
     ))
-  } catch (e: any) { console.error('EntitySport discovery failed:', e.message) }
+  } catch (e: any) { console.error('EntitySport season sync failed:', e.message) }
 
-  // Deduplicate by Teams + Time
+  // Deduplicate by Teams + Time (or Match Number)
   const seen = new Set()
-  return allFound.filter(m => {
+  return allFound.filter((m: NormalizedMatch) => {
     const key = `${m.teamHome.short}_${m.teamAway.short}_${m.startTime.getTime()}`
     if (seen.has(key)) return false
     seen.add(key)
