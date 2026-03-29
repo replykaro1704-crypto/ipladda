@@ -24,21 +24,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No IPL matches found from providers' }, { status: 404 })
     }
 
-    // 3. Upsert into Supabase
+    // 3. Upsert into Supabase (Use sorted index as Match #)
     let synced = 0
-    for (const m of iplMatches) {
-      // Determine match number (default to 0 if not found)
-      const matchNum = m.matchNumber || 0
+    for (let i = 0; i < iplMatches.length; i++) {
+      const m = iplMatches[i]
+      const matchNum = i + 1 // Perfect Chronological Numbering
       
-      // 1. Calculate lock time (30 mins before match starts)
+      // Calculate lock time (30 mins before match starts)
       const lockDate = new Date(m.startTime.getTime() - 30 * 60000)
-
-      // 2. Identify the correct column for this provider's ID
+      
       const idColumn = m.provider === 'rapidapi' ? 'ext_rapidapi_id' 
                      : m.provider === 'cricketdata' ? 'ext_cricketdata_id' 
                      : 'ext_entity_id'
 
-      // 3. Find if this specific match already exists using this provider's ID OR Team+Time combo
       const { data: existing } = await adminSupabase
         .from('matches')
         .select('id')
@@ -56,7 +54,6 @@ export async function POST(req: NextRequest) {
         lock_time: lockDate.toISOString(),
         status: m.status,
         match_number: matchNum,
-        // Ensure the ID is ONLY in the correct column
         ext_rapidapi_id: m.provider === 'rapidapi' ? m.externalId : null,
         ext_cricketdata_id: m.provider === 'cricketdata' ? m.externalId : null,
         ext_entity_id: m.provider === 'entity' ? m.externalId : null,

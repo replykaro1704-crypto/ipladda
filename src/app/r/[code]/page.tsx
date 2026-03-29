@@ -389,7 +389,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       const { data: matchesData } = await supabase
         .from('matches')
         .select('*')
-        .order('match_number')
+        .order('match_time')
 
       if (matchesData) setMatches(matchesData)
 

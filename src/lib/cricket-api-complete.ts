@@ -404,18 +404,20 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
     ))
   } catch (e: any) { console.error('CricketData sync failed:', e.message) }
 
-  // Deduplicate by Teams + Time
+  // Deduplicate by Teams + Time (Match by Hour)
   const seen = new Set()
-  return allFound.filter((m: NormalizedMatch) => {
-    // Sort team names to handle Home/Away swaps across providers
+  const deduplicated = allFound.filter((m: NormalizedMatch) => {
     const teams = [m.teamHome.short.toUpperCase(), m.teamAway.short.toUpperCase()].sort().join('_')
-    const timeKey = Math.floor(m.startTime.getTime() / 3600000) // Match by Hour
+    const timeKey = Math.floor(m.startTime.getTime() / 3600000) 
     const key = `${teams}_${timeKey}`
     
     if (seen.has(key)) return false
     seen.add(key)
     return true
-  }).sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+  })
+
+  // Final Chronological Sort
+  return deduplicated.sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
 }
 
 /**
