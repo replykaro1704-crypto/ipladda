@@ -1,4 +1,4 @@
-import { getMatchScorecard, getPlayingXI, getLiveScore, getMatchInfo } from '@/lib/cricket-api-complete'
+import { getMatchScorecard, getPlayingXI, getLiveScore, getMatchInfo, getIPLMatches } from '@/lib/cricket-api-complete'
 import { adminSupabase } from '@/lib/supabase/admin'
 import { scorePredictions } from '@/lib/cricket-sync'
 
@@ -19,6 +19,26 @@ export async function GET(req: Request) {
     .or('status.eq.live,status.eq.upcoming,status.eq.completed')
 
   const results = []
+
+  // Feature: Auto-repair matches missing external IDs
+  const matchesMissingIds = (matches || []).filter(m => !m.ext_rapidapi_id && !m.ext_cricketdata_id && !m.ext_entity_id)
+  if (matchesMissingIds.length > 0) {
+    const freshSchedule = await getIPLMatches()
+    for (const m of matchesMissingIds) {
+      const foundInApi = freshSchedule.find(api => 
+        (api.teamHome.short === m.team_home && api.teamAway.short === m.team_away) ||
+        (api.teamHome.short === m.team_away && api.teamAway.short === m.team_home)
+      )
+      if (foundInApi) {
+        const idCol = foundInApi.provider === 'rapidapi' ? 'ext_rapidapi_id' : 
+                      foundInApi.provider === 'cricketdata' ? 'ext_cricketdata_id' : 'ext_entity_id'
+        await adminSupabase.from('matches').update({ [idCol]: foundInApi.externalId }).eq('id', m.id)
+        // Update the local match object so the loop below works
+        m[idCol] = foundInApi.externalId
+        results.push({ matchId: m.id, teams: `${m.team_home} vs ${m.team_away}`, action: 'auto_repaired_ids' })
+      }
+    }
+  }
 
   for (const m of matches || []) {
     const matchTime = new Date(m.match_time)
