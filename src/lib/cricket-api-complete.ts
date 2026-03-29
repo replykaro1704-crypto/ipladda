@@ -195,25 +195,32 @@ function normalizeRapidAPIMatches(data: any): NormalizedMatch[] {
 
 // RapidAPI hscard → NormalizedScorecard
 function normalizeRapidAPIScorecard(data: any, matchId: string): NormalizedScorecard {
+  // Support both camelCase (live) and all-lowercase (completed) keys from RapidAPI
   const header = data.matchHeader || {}
-  const scoreCard = data.scoreCard || []
+  const scoreCard = data.scorecard || data.scoreCard || []
+  const isComplete = data.ismatchcomplete || header.complete || false
+  const statusLine = data.status || header.status || ''
 
   const innings: NormalizedInnings[] = scoreCard.map((inn: any) => {
-    const batsmen: BatsmanStat[] = Object.values(inn.batTeamDetails?.batsmenData || {})
+    const batDetails = inn.batTeamDetails || inn.batteamdetails || {}
+    const bowlDetails = inn.bowlTeamDetails || inn.bowlteamdetails || {}
+    const scoreDetails = inn.scoreDetails || inn.scoredetails || {}
+
+    const batsmen: BatsmanStat[] = Object.values(batDetails.batsmenData || batDetails.batsmendata || {})
       .map((b: any) => ({
-        name: b.batName || '',
+        name: b.batName || b.name || '',
         runs: b.runs || 0,
         balls: b.balls || 0,
         fours: b.fours || 0,
         sixes: b.sixes || 0,
-        strikeRate: parseFloat(b.strikeRate || '0'),
+        strikeRate: parseFloat(b.strikeRate || b.strkrate || '0'),
         dismissal: b.outDesc || 'not out',
-        isNotOut: b.outDesc === 'not out',
+        isNotOut: b.outDesc === 'not out' || !b.outDesc,
       }))
 
-    const bowlers: BowlerStat[] = Object.values(inn.bowlTeamDetails?.bowlersData || {})
+    const bowlers: BowlerStat[] = Object.values(bowlDetails.bowlersData || bowlDetails.bowlersdata || {})
       .map((b: any) => ({
-        name: b.bowlName || '',
+        name: b.bowlName || b.name || '',
         overs: parseFloat(b.overs || '0'),
         maidens: b.maidens || 0,
         runs: b.runs || 0,
@@ -222,12 +229,12 @@ function normalizeRapidAPIScorecard(data: any, matchId: string): NormalizedScore
       }))
 
     return {
-      number: inn.inningsId,
-      battingTeam: inn.batTeamDetails?.batTeamShortName || '',
-      bowlingTeam: inn.bowlTeamDetails?.bowlTeamShortName || '',
-      total: inn.scoreDetails?.runs || 0,
-      wickets: inn.scoreDetails?.wickets || 0,
-      overs: parseFloat(inn.scoreDetails?.overs || '0'),
+      number: inn.inningsId || inn.inningsid || 0,
+      battingTeam: batDetails.batTeamShortName || batDetails.batteamshortname || '',
+      bowlingTeam: bowlDetails.bowlTeamShortName || bowlDetails.bowlteamshortname || '',
+      total: scoreDetails.runs || 0,
+      wickets: scoreDetails.wickets || 0,
+      overs: parseFloat(scoreDetails.overs || '0'),
       batsmen,
       bowlers,
     }
@@ -245,16 +252,16 @@ function normalizeRapidAPIScorecard(data: any, matchId: string): NormalizedScore
   })[0] || { name: '', wickets: 0, overs: 0, runs: 0, economy: 0 }
 
   const highestTotal = Math.max(...innings.map(i => i.total), 0)
-  const winnerShort = header.result?.winningTeam || ''
-  const tossDecision = header.toss?.decision?.toLowerCase().includes('bat') ? 'bat' : 'field'
+  const winnerShort = header.result?.winningTeam || (statusLine.includes('won') ? statusLine.split(' ')[0] : '')
+  const tossDecision = (header.toss?.decision || '').toLowerCase().includes('bat') ? 'bat' : 'field'
 
   return {
     externalId: matchId,
     winner: winnerShort,
     winnerFull: winnerShort,
-    winMarginText: header.status || '',
+    winMarginText: statusLine,
     tossWinner: header.toss?.winner || '',
-    tossDecision,
+    tossDecision: tossDecision as any,
     manOfMatch: header.playersOfTheMatch?.[0]?.name || topBatsman.name,
     innings,
     highestTotal,
