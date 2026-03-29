@@ -20,9 +20,12 @@ export async function POST(req: NextRequest) {
     // 2. Fetch matches from all 3 APIs (with 5-min caching)
     const iplMatches = await getIPLMatches()
 
-    if (iplMatches.length === 0) {
+    if (!iplMatches || iplMatches.length === 0) {
       return NextResponse.json({ error: 'No IPL matches found from providers' }, { status: 404 })
     }
+
+    // 2.5 Fresh Wipe (User requested: Delete all first to clear 2023 leftovers)
+    await adminSupabase.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
     // 3. Upsert into Supabase (Use sorted index as Match #)
     let synced = 0
