@@ -519,7 +519,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
         </div>
       )}
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-24">
         <AnimatePresence mode="popLayout">
           {activeTab === 'predict' && currentPlayer && (
             <motion.div key="predict" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
