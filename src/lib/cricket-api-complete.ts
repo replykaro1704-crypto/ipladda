@@ -159,6 +159,7 @@ function normalizeRapidAPIMatches(data: any): NormalizedMatch[] {
         const info = m.matchInfo
         const score = m.matchScore
         if (!info) continue
+        const homeShort = info.team1?.teamSName || ''
         matches.push({
           externalId: info.matchId?.toString(),
           provider: 'rapidapi' as const,
@@ -166,7 +167,7 @@ function normalizeRapidAPIMatches(data: any): NormalizedMatch[] {
           seriesName: info.seriesName || wrapper.seriesName || '',
           teamHome: {
             name: info.team1?.teamName || '',
-            short: info.team1?.teamSName || '',
+            short: homeShort,
             id: info.team1?.teamId?.toString() || ''
           },
           teamAway: {
@@ -314,62 +315,58 @@ function normalizeRapidAPIXI(data: any): NormalizedPlayingXI {
  * Tries: RapidAPI → CricketData → EntitySport
  */
 const IPL_TEAMS = ['RCB', 'MI', 'CSK', 'KKR', 'SRH', 'DC', 'RR', 'GT', 'PBKS', 'LSG', 'KXP', 'KXIP']
+const IPL_CID = '127579' // Official EntitySport CID for Indian Premier League
+
+function getVenueFallback(teamShort: string): string {
+  const venues: Record<string, string> = {
+    'CSK': 'MA Chidambaram Stadium, Chennai',
+    'MI': 'Wankhede Stadium, Mumbai',
+    'RCB': 'M. Chinnaswamy Stadium, Bengaluru',
+    'KKR': 'Eden Gardens, Kolkata',
+    'SRH': 'Rajiv Gandhi Intl. Stadium, Hyderabad',
+    'DC': 'Arun Jaitley Stadium, Delhi',
+    'RR': 'Sawai Mansingh Stadium, Jaipur',
+    'GT': 'Narendra Modi Stadium, Ahmedabad',
+    'PBKS': 'IS Bindra Stadium, Mohali',
+    'LSG': 'Ekana Sports City, Lucknow',
+  }
+  return venues[teamShort.toUpperCase()] || 'Stadium'
+}
 
 export async function getIPLMatches(): Promise<NormalizedMatch[]> {
   const allFound: NormalizedMatch[] = []
 
-  // 1. Try RapidAPI (Live, Recent, Upcoming)
+  // 1. Primary: EntitySport FULL Competition Fetch (Best for upcoming)
   try {
-    const live = await fetchRapidAPI('/matches/v1/live')
-    const recent = await fetchRapidAPI('/matches/v1/recent')
-    const upcoming = await fetchRapidAPI('/matches/v1/upcoming')
+    const r = await fetchEntity(`/competitions/${IPL_CID}/matches/`, { per_page: '100' })
+    const items = r.items || []
     
-    const rapidMatches = [
-      ...normalizeRapidAPIMatches(live),
-      ...normalizeRapidAPIMatches(recent),
-      ...normalizeRapidAPIMatches(upcoming)
-    ]
-    
-    allFound.push(...rapidMatches.filter(m => 
-      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
-      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
-    ))
-  } catch (e: any) { console.error('RapidAPI discovery failed:', e.message) }
-
-  // 2. Try CricketData (Current Matches)
-  try {
-    const data = await fetchCricketData('currentMatches')
-    const matches = normalizeCricketDataMatches(data)
-    allFound.push(...matches.filter(m => 
-      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
-      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
-    ))
-  } catch (e: any) { console.error('CricketData discovery failed:', e.message) }
-
-  // 3. Try EntitySport (Full Season Schedule)
-  try {
-    const r = await fetchEntity('/matches/', { 
-      date: '2026-03-22_2026-06-01', 
-      per_page: '100' 
-    })
-    const entityMatches = (r.items || []).map((m: any) => ({
+    const entityMatches = items.map((m: any) => ({
       externalId: m.match_id.toString(),
       provider: 'entity' as const,
       matchNumber: m.match_number || 0,
       seriesName: m.competition?.title || 'IPL 2026',
       teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
       teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
-      venue: m.venue?.name || 'Stadium',
+      venue: m.venue?.name || getVenueFallback(m.teama?.short_name),
       city: m.venue?.location || '',
       startTime: new Date(m.date_start),
       status: m.status_str?.toLowerCase().includes('live') ? 'live' : m.status_str?.toLowerCase().includes('completed') ? 'completed' : 'upcoming',
     } as NormalizedMatch))
-    
-    allFound.push(...entityMatches.filter((m: NormalizedMatch) => 
+
+    // Filter only 2026 matches
+    allFound.push(...entityMatches.filter((m: NormalizedMatch) => m.startTime.getFullYear() === 2026))
+  } catch (e: any) { console.error('Season CID sync failed:', e.message) }
+
+  // 2. Secondary: RapidAPI (Best for Real-time)
+  try {
+    const live = await fetchRapidAPI('/matches/v1/live')
+    const normalized = normalizeRapidAPIMatches(live)
+    allFound.push(...normalized.filter((m: NormalizedMatch) => 
       IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
       IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
     ))
-  } catch (e: any) { console.error('EntitySport season sync failed:', e.message) }
+  } catch (e: any) { console.error('RapidAPI live sync failed:', e.message) }
 
   // Deduplicate by Teams + Time (or Match Number)
   const seen = new Set()
