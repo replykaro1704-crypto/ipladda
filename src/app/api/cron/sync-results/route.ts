@@ -12,11 +12,11 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get matches that need syncing (any live/upcoming matches)
+  // Get matches that need syncing (live, upcoming, or completed missing results)
   const { data: matches } = await adminSupabase
     .from('matches')
-    .select('id, team_home, team_away, ext_rapidapi_id, ext_cricketdata_id, ext_entity_id, status, match_time')
-    .or('status.eq.live,status.eq.upcoming')
+    .select('id, team_home, team_away, ext_rapidapi_id, ext_cricketdata_id, ext_entity_id, status, match_time, result_fetched_at')
+    .or('status.eq.live,status.eq.upcoming,status.eq.completed')
 
   const results = []
 
@@ -25,34 +25,38 @@ export async function GET(req: Request) {
     const now = new Date()
     const hoursAgo = (now.getTime() - matchTime.getTime()) / (1000 * 60 * 60)
 
-    // 1. Update LIVE SCORES
-    if (m.status === 'live') {
+    // 1. Update LIVE SCORES & Check for COMPLETION
+    if (m.status === 'live' || (m.status === 'completed' && !m.result_fetched_at)) {
       let live = null
 
-      // Try RapidAPI first
-      if (m.ext_rapidapi_id) {
-        live = await getLiveScore(m.ext_rapidapi_id)
-      } 
-      // Fallback to CricketData for score string if needed
-      else if (m.ext_cricketdata_id) {
-        const info = await getMatchInfo(m.ext_cricketdata_id)
-        if (info?.score) {
-          const s1 = info.score[0] ? `${info.score[0].r}/${info.score[0].w} (${info.score[0].o})` : ''
-          const s2 = info.score[1] ? `${info.score[1].r}/${info.score[1].w} (${info.score[1].o})` : ''
-          live = { homeScore: s1, awayScore: s2 }
+      // If it's live, update the scores
+      if (m.status === 'live') {
+        // Try RapidAPI first
+        if (m.ext_rapidapi_id) {
+          live = await getLiveScore(m.ext_rapidapi_id)
+        } 
+        // Fallback to CricketData for score string if needed
+        else if (m.ext_cricketdata_id) {
+          const info = await getMatchInfo(m.ext_cricketdata_id)
+          if (info?.score) {
+            const s1 = info.score[0] ? `${info.score[0].r}/${info.score[0].w} (${info.score[0].o})` : ''
+            const s2 = info.score[1] ? `${info.score[1].r}/${info.score[1].w} (${info.score[1].o})` : ''
+            live = { homeScore: s1, awayScore: s2 }
+          }
+        }
+
+        if (live) {
+          await adminSupabase.from('matches').update({
+            live_home_score: live.homeScore,
+            live_away_score: live.awayScore,
+            live_updated_at: new Date().toISOString(),
+          }).eq('id', m.id)
         }
       }
 
-      if (live) {
-        await adminSupabase.from('matches').update({
-          live_home_score: live.homeScore,
-          live_away_score: live.awayScore,
-          live_updated_at: new Date().toISOString(),
-        }).eq('id', m.id)
-      }
-
-      // If match > 3.5 hours old, try to get full result/scorecard
-      if (hoursAgo > 3.5) {
+      // If it's live (and old) or completed (but no result), fetch the full scorecard
+      const isPastStartTime = hoursAgo > 3.0;
+      if (isPastStartTime || m.status === 'completed') {
         const scorecard = await getMatchScorecard(
           m.ext_rapidapi_id || '',
           m.ext_cricketdata_id || undefined,
