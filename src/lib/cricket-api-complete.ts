@@ -147,7 +147,50 @@ function normalizeCricketDataMatches(data: any): NormalizedMatch[] {
   }))
 }
 
-// RapidAPI → Normalized  
+// RapidAPI Series → Normalized
+function normalizeRapidAPISeriesMatches(data: any): NormalizedMatch[] {
+  const matches: NormalizedMatch[] = []
+  const details = data?.matchDetails || []
+  
+  for (const group of details) {
+    const map = group.matchDetailsMap
+    if (!map || !map.match) continue
+    
+    for (const m of map.match) {
+      const info = m.matchInfo
+      if (!info) continue
+      
+      const d = new Date(parseInt(info.startDate || '0'))
+      // 2026 is already the target, but keep calibration for safety
+      if (d.getFullYear() < 2026) d.setFullYear(2026)
+
+      matches.push({
+        externalId: info.matchId?.toString(),
+        provider: 'rapidapi' as const,
+        matchNumber: parseInt(info.matchDesc?.match(/\d+/)?.[0] || '0'),
+        seriesName: info.seriesName || '',
+        teamHome: {
+          name: info.team1?.teamName || '',
+          short: info.team1?.teamSName || '',
+          id: info.team1?.teamId?.toString() || ''
+        },
+        teamAway: {
+          name: info.team2?.teamName || '',
+          short: info.team2?.teamSName || '',
+          id: info.team2?.teamId?.toString() || ''
+        },
+        venue: info.venueInfo?.ground || getVenueFallback(info.team1?.teamName || info.team1?.teamSName),
+        city: info.venueInfo?.city || '',
+        startTime: d,
+        status: calculateMatchStatus(d),
+        statusText: info.status || '',
+      })
+    }
+  }
+  return matches
+}
+
+// RapidAPI Global → Normalized  
 function normalizeRapidAPIMatches(data: any): NormalizedMatch[] {
   const matches: NormalizedMatch[] = []
   const typeMatches = data?.typeMatches || []
@@ -349,7 +392,7 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
   // Series ID 9241 = Indian Premier League 2026
   try {
      const data = await fetchRapidAPI('/series/v1/9241')
-     const matches = normalizeRapidAPIMatches(data)
+     const matches = normalizeRapidAPISeriesMatches(data)
      allFound.push(...matches.filter((m: NormalizedMatch) => 
        IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
        IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
