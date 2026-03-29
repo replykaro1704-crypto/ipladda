@@ -313,69 +313,70 @@ function normalizeRapidAPIXI(data: any): NormalizedPlayingXI {
  * Get all IPL 2026 live/recent matches
  * Tries: RapidAPI → CricketData → EntitySport
  */
+const IPL_TEAMS = ['RCB', 'MI', 'CSK', 'KKR', 'SRH', 'DC', 'RR', 'GT', 'PBKS', 'LSG', 'KXP', 'KXIP']
+
 export async function getIPLMatches(): Promise<NormalizedMatch[]> {
-  // Try RapidAPI first (most real-time)
+  const allFound: NormalizedMatch[] = []
+
+  // 1. Try RapidAPI (Live, Recent, Upcoming)
   try {
     const live = await fetchRapidAPI('/matches/v1/live')
     const recent = await fetchRapidAPI('/matches/v1/recent')
     const upcoming = await fetchRapidAPI('/matches/v1/upcoming')
-
-    const all = [
+    
+    const rapidMatches = [
       ...normalizeRapidAPIMatches(live),
       ...normalizeRapidAPIMatches(recent),
-      ...normalizeRapidAPIMatches(upcoming),
+      ...normalizeRapidAPIMatches(upcoming)
     ]
+    
+    allFound.push(...rapidMatches.filter(m => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
+  } catch (e: any) { console.error('RapidAPI discovery failed:', e.message) }
 
-    // Filter IPL matches
-    const ipl = all.filter(m =>
-      m.seriesName.toLowerCase().includes('premier league') ||
-      m.seriesName.toLowerCase().includes('ipl')
-    )
-
-    if (ipl.length > 0) return ipl
-    throw new Error('No IPL matches in RapidAPI response')
-  } catch (e1) {
-    console.warn('RapidAPI failed, trying CricketData:', e1)
-  }
-
-  // Fallback: CricketData.org
+  // 2. Try CricketData (Current Matches)
   try {
     const data = await fetchCricketData('currentMatches')
     const matches = normalizeCricketDataMatches(data)
-    const ipl = matches.filter(m =>
-      m.seriesName.toLowerCase().includes('premier league') ||
-      m.seriesName.toLowerCase().includes('ipl')
-    )
-    if (ipl.length > 0) return ipl
-    throw new Error('No IPL in CricketData')
-  } catch (e2) {
-    console.warn('CricketData failed, trying EntitySport:', e2)
-  }
+    allFound.push(...matches.filter(m => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
+  } catch (e: any) { console.error('CricketData discovery failed:', e.message) }
 
-  // Last resort: EntitySport
+  // 3. Try EntitySport (Matches List)
   try {
     const live = await fetchEntity('/matches/', { status: '1' })
     const upcoming = await fetchEntity('/matches/', { status: '3' })
-    const all = [...(live.items || []), ...(upcoming.items || [])]
-    return all
-      .filter((m: any) => m.competition?.title?.toLowerCase().includes('premier league'))
-      .map((m: any) => ({
-        externalId: m.match_id,
-        provider: 'entity' as const,
-        matchNumber: 0,
-        seriesName: m.competition?.title || '',
-        teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
-        teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
-        venue: m.venue?.name || 'Venue TBD',
-        city: m.venue?.location || '',
-        startTime: new Date(m.date_start),
-        status: m.status as any,
-        statusText: m.status_note || '',
-      }))
-  } catch (e3) {
-    console.error('All APIs failed for matches:', e3)
-    return []
-  }
+    const entityMatches = [...(live.items || []), ...(upcoming.items || [])].map((m: any) => ({
+      externalId: m.match_id.toString(),
+      provider: 'entity' as const,
+      matchNumber: 0,
+      seriesName: m.competition?.title || '',
+      teamHome: { name: m.teama?.name || '', short: m.teama?.short_name || '', id: m.teama?.team_id || '' },
+      teamAway: { name: m.teamb?.name || '', short: m.teamb?.short_name || '', id: m.teamb?.team_id || '' },
+      venue: m.venue?.name || 'Venue TBD',
+      city: m.venue?.location || '',
+      startTime: new Date(m.date_start),
+      status: m.status_str?.toLowerCase().includes('live') ? 'live' : m.status_str?.toLowerCase().includes('completed') ? 'completed' : 'upcoming',
+    } as NormalizedMatch))
+    
+    allFound.push(...entityMatches.filter(m => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
+  } catch (e: any) { console.error('EntitySport discovery failed:', e.message) }
+
+  // Deduplicate by Teams + Time
+  const seen = new Set()
+  return allFound.filter(m => {
+    const key = `${m.teamHome.short}_${m.teamAway.short}_${m.startTime.getTime()}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  }).sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
 }
 
 /**
