@@ -391,7 +391,7 @@ export async function getMatchScorecard(
   if (rapidApiId) {
     try {
       const data = await fetchRapidAPI(`/mcenter/v1/${rapidApiId}/hscard`)
-      if (data?.matchHeader?.complete) {
+      if (data?.matchHeader?.complete || data?.ismatchcomplete) {
         return normalizeRapidAPIScorecard(data, rapidApiId)
       }
     } catch (e) {
