@@ -38,12 +38,12 @@ export async function POST(req: NextRequest) {
                      : m.provider === 'cricketdata' ? 'ext_cricketdata_id' 
                      : 'ext_entity_id'
 
-      // 3. Find if this specific match already exists using this provider's ID
+      // 3. Find if this specific match already exists using this provider's ID OR Team+Time combo
       const { data: existing } = await adminSupabase
         .from('matches')
         .select('id')
-        .eq(idColumn, m.externalId)
-        .single()
+        .or(`${idColumn}.eq.${m.externalId},and(team_home.eq.${m.teamHome.short},team_away.eq.${m.teamAway.short},match_time.eq.${m.startTime.toISOString()})`)
+        .maybeSingle()
 
       const matchData = {
         team_home: m.teamHome.short,
