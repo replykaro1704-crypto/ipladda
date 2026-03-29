@@ -353,8 +353,11 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
       status: m.status_str?.toLowerCase().includes('live') ? 'live' : m.status_str?.toLowerCase().includes('completed') ? 'completed' : 'upcoming',
     } as NormalizedMatch))
 
-    // Filter only 2026 matches
-    allFound.push(...entityMatches.filter((m: NormalizedMatch) => m.startTime.getFullYear() === 2026))
+    // Push ALL matches where teams are IPL-branded (ignoring strict year labels)
+    allFound.push(...entityMatches.filter((m: NormalizedMatch) => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
   } catch (e: any) { console.error('Season CID sync failed:', e.message) }
 
   // 2. Secondary: RapidAPI (Live & Upcoming)
@@ -362,21 +365,36 @@ export async function getIPLMatches(): Promise<NormalizedMatch[]> {
     const [live, upcoming] = await Promise.all([
       fetchRapidAPI('/matches/v1/live'),
       fetchRapidAPI('/matches/v1/upcoming')
-    ])
-    const normalized = [
+    ]).catch(() => [[], []])
+    
+    const rapidMatches = [
       ...normalizeRapidAPIMatches(live),
       ...normalizeRapidAPIMatches(upcoming)
     ]
-    allFound.push(...normalized.filter((m: NormalizedMatch) => 
+    allFound.push(...rapidMatches.filter((m: NormalizedMatch) => 
       IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
       IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
     ))
   } catch (e: any) { console.error('RapidAPI sync failed:', e.message) }
 
-  // Deduplicate by Teams + Time (or Match Number)
+  // 3. Tertiary: CricketData (Match List)
+  try {
+    const data = await fetchCricketData('currentMatches')
+    const matches = normalizeCricketDataMatches(data)
+    allFound.push(...matches.filter((m: NormalizedMatch) => 
+      IPL_TEAMS.includes(m.teamHome.short.toUpperCase()) && 
+      IPL_TEAMS.includes(m.teamAway.short.toUpperCase())
+    ))
+  } catch (e: any) { console.error('CricketData sync failed:', e.message) }
+
+  // Deduplicate by Teams + Time
   const seen = new Set()
   return allFound.filter((m: NormalizedMatch) => {
-    const key = `${m.teamHome.short}_${m.teamAway.short}_${m.startTime.getTime()}`
+    // Sort team names to handle Home/Away swaps across providers
+    const teams = [m.teamHome.short.toUpperCase(), m.teamAway.short.toUpperCase()].sort().join('_')
+    const timeKey = Math.floor(m.startTime.getTime() / 3600000) // Match by Hour
+    const key = `${teams}_${timeKey}`
+    
     if (seen.has(key)) return false
     seen.add(key)
     return true
