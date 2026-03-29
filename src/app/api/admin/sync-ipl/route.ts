@@ -30,15 +30,19 @@ export async function POST(req: NextRequest) {
       // Determine match number (default to 0 if not found)
       const matchNum = m.matchNumber || 0
       
-      // Calculate lock time (30 mins before match starts)
+      // 1. Calculate lock time (30 mins before match starts)
       const lockDate = new Date(m.startTime.getTime() - 30 * 60000)
 
-      // Upsert based on external IDs to prevent doubles
-      // We try to match existing records by any of the 3 external IDs
+      // 2. Identify the correct column for this provider's ID
+      const idColumn = m.provider === 'rapidapi' ? 'ext_rapidapi_id' 
+                     : m.provider === 'cricketdata' ? 'ext_cricketdata_id' 
+                     : 'ext_entity_id'
+
+      // 3. Find if this specific match already exists using this provider's ID
       const { data: existing } = await adminSupabase
         .from('matches')
         .select('id')
-        .or(`ext_rapidapi_id.eq.${m.externalId},ext_cricketdata_id.eq.${m.externalId},ext_entity_id.eq.${m.externalId}`)
+        .eq(idColumn, m.externalId)
         .single()
 
       const matchData = {
@@ -52,10 +56,10 @@ export async function POST(req: NextRequest) {
         lock_time: lockDate.toISOString(),
         status: m.status,
         match_number: matchNum,
-        // Assign the ID to the correct provider column
-        ...(m.provider === 'rapidapi' ? { ext_rapidapi_id: m.externalId } : {}),
-        ...(m.provider === 'cricketdata' ? { ext_cricketdata_id: m.externalId } : {}),
-        ...(m.provider === 'entity' ? { ext_entity_id: m.externalId } : {}),
+        // Ensure the ID is ONLY in the correct column
+        ext_rapidapi_id: m.provider === 'rapidapi' ? m.externalId : null,
+        ext_cricketdata_id: m.provider === 'cricketdata' ? m.externalId : null,
+        ext_entity_id: m.provider === 'entity' ? m.externalId : null,
       }
 
       if (existing) {
